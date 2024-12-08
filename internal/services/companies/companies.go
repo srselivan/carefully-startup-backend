@@ -121,7 +121,7 @@ func (s *Service) GetAllWithShares(ctx context.Context, onlyCurrentRound bool) (
 
 	game, err := s.gameRepo.Get(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("s.settingsRepo.Get: %w", err)
+		return nil, fmt.Errorf("s.gameRepo.Get: %w", err)
 	}
 
 	shares, err := s.sharesRepo.GetAllActual(ctx)

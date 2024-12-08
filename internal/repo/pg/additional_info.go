@@ -31,10 +31,11 @@ type additionalInfo struct {
 const additionalInfosQueryCreate = `
 insert into backend.additional_info (name, description, type, cost, company_id)
 values (:name, :description, :type, :cost, :company_id)
+returning id
 `
 
 func (r *AdditionalInfosRepo) Create(ctx context.Context, info *models.AdditionalInfo) (int64, error) {
-	result, err := r.db.NamedExecContext(
+	rows, err := r.db.NamedQueryContext(
 		ctx,
 		additionalInfosQueryCreate,
 		struct {
@@ -54,10 +55,16 @@ func (r *AdditionalInfosRepo) Create(ctx context.Context, info *models.Additiona
 	if err != nil {
 		return 0, fmt.Errorf("query error: %w", err)
 	}
+	defer rows.Close()
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		return 0, fmt.Errorf("get inserted id: %w", err)
+	var id int64
+	for rows.Next() {
+		if err = rows.Scan(&id); err != nil {
+			return 0, fmt.Errorf("scan error: %w", err)
+		}
+	}
+	if err = rows.Err(); err != nil {
+		return 0, fmt.Errorf("rows error: %w", err)
 	}
 	return id, nil
 }

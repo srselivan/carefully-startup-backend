@@ -23,18 +23,26 @@ type balance struct {
 const balancesQueryCreate = `
 insert into backend.balance(amount) 
 values($1)
+returning id
 `
 
 func (r *BalancesRepo) Create(ctx context.Context, balance *models.Balance) (int64, error) {
-	result, err := r.db.ExecContext(ctx, balancesQueryCreate, balance.Amount)
+	rows, err := r.db.QueryxContext(ctx, balancesQueryCreate, balance.Amount)
 	if err != nil {
 		return 0, fmt.Errorf("query error: %w", err)
 	}
+	defer rows.Close()
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		return 0, fmt.Errorf("get inserted id: %w", err)
+	var id int64
+	for rows.Next() {
+		if err = rows.Scan(&id); err != nil {
+			return 0, fmt.Errorf("scan error: %w", err)
+		}
 	}
+	if err = rows.Err(); err != nil {
+		return 0, fmt.Errorf("rows error: %w", err)
+	}
+
 	return id, nil
 }
 

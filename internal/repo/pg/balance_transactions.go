@@ -32,10 +32,11 @@ type balanceTransaction struct {
 const balanceTransactionsQueryCreate = `
 insert into backend.balance_transaction (balance_id, round, amount, details, additional_info_id, random_event_id) 
 values (:balance_id, :round, :amount, :details, :additional_info_id, :random_event_id)
+returning id
 `
 
 func (r *BalanceTransactionsRepo) Create(ctx context.Context, tr *models.BalanceTransaction) (int64, error) {
-	result, err := r.db.NamedExecContext(
+	rows, err := r.db.NamedQueryContext(
 		ctx,
 		balanceTransactionsQueryCreate,
 		struct {
@@ -57,11 +58,18 @@ func (r *BalanceTransactionsRepo) Create(ctx context.Context, tr *models.Balance
 	if err != nil {
 		return 0, fmt.Errorf("exec error: %w", err)
 	}
+	defer rows.Close()
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		return 0, fmt.Errorf("get inserted id: %w", err)
+	var id int64
+	for rows.Next() {
+		if err = rows.Scan(&id); err != nil {
+			return 0, fmt.Errorf("scan error: %w", err)
+		}
 	}
+	if err = rows.Err(); err != nil {
+		return 0, fmt.Errorf("rows error: %w", err)
+	}
+
 	return id, nil
 }
 

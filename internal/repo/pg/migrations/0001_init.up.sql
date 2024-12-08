@@ -8,6 +8,9 @@ create table if not exists backend.settings
     default_balance_amount bigint  not null
 );
 
+insert into backend.settings (rounds_count, rounds_duration, link_to_pdf, enable_random_events, default_balance_amount)
+values (3, 600000000000, 'http://hui/pizda', false, 1000);
+
 create table if not exists backend.game
 (
     id            serial primary key,
@@ -15,6 +18,8 @@ create table if not exists backend.game
     current_round integer,
     round_state   smallint not null
 );
+
+insert into backend.game (state, current_round, round_state) values (0, 0, 0);
 
 create table if not exists backend.company
 (
