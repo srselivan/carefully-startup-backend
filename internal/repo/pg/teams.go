@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jmoiron/sqlx"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/lib/pq"
 	"investment-game-backend/internal/models"
 	"investment-game-backend/internal/repo"
 	"time"
@@ -22,17 +23,17 @@ func NewTeamsRepo(db *sqlx.DB) *TeamsRepo {
 }
 
 type team struct {
-	ID              int64                `db:"id"`
-	CreatedAt       time.Time            `db:"created_at"`
-	UpdatedAt       *time.Time           `db:"updated_at"`
-	Name            string               `db:"name"`
-	Members         pgtype.Array[string] `db:"members"`
-	Credentials     string               `db:"credentials"`
-	BalanceID       int64                `db:"balance_id"`
-	Shares          []byte               `db:"shares"`
-	AdditionalInfos []byte               `db:"additional_info_ids"`
-	RandomEventID   *int64               `db:"random_event_id"`
-	GameID          int64                `db:"game_id"`
+	ID              int64          `db:"id"`
+	CreatedAt       time.Time      `db:"created_at"`
+	UpdatedAt       *time.Time     `db:"updated_at"`
+	Name            string         `db:"name"`
+	Members         pq.StringArray `db:"members"`
+	Credentials     string         `db:"credentials"`
+	BalanceID       int64          `db:"balance_id"`
+	Shares          []byte         `db:"shares"`
+	AdditionalInfos []byte         `db:"additional_info_ids"`
+	RandomEventID   *int64         `db:"random_event_id"`
+	GameID          int64          `db:"game_id"`
 }
 
 const teamsRepoQueryCreate = `
@@ -212,7 +213,7 @@ func (r *TeamsRepo) GetByCredentials(ctx context.Context, credentials string) (*
 		CreatedAt:       t.CreatedAt,
 		UpdatedAt:       t.UpdatedAt,
 		Name:            t.Name,
-		Members:         t.Members.Elements,
+		Members:         t.Members,
 		Credentials:     t.Credentials,
 		BalanceID:       t.BalanceID,
 		Shares:          nil,
@@ -260,7 +261,7 @@ func (r *TeamsRepo) GetByID(ctx context.Context, id int64) (*models.Team, error)
 		CreatedAt:       t.CreatedAt,
 		UpdatedAt:       t.UpdatedAt,
 		Name:            t.Name,
-		Members:         t.Members.Elements,
+		Members:         t.Members,
 		Credentials:     t.Credentials,
 		BalanceID:       t.BalanceID,
 		Shares:          nil,
@@ -310,7 +311,7 @@ func (r *TeamsRepo) GetAllByGameID(ctx context.Context, gameID int64) ([]models.
 			CreatedAt:       t.CreatedAt,
 			UpdatedAt:       t.UpdatedAt,
 			Name:            t.Name,
-			Members:         t.Members.Elements,
+			Members:         t.Members,
 			Credentials:     t.Credentials,
 			BalanceID:       t.BalanceID,
 			Shares:          nil,
