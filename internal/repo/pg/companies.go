@@ -31,7 +31,7 @@ returning id
 `
 
 func (r *CompaniesRepo) Create(ctx context.Context, company *models.Company) (int64, error) {
-	rows, err := r.db.QueryxContext(
+	rows, err := r.db.NamedQueryContext(
 		ctx,
 		companiesRepoQueryCreate,
 		struct {
