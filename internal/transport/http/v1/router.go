@@ -2,6 +2,7 @@ package v1
 
 import (
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 	"github.com/rs/zerolog"
 	"investment-game-backend/internal/services"
 	"net/http"
@@ -46,6 +47,12 @@ func NewRouter(cfg Config) *Router {
 
 func (r *Router) initRouter() {
 	apiRouter := chi.NewRouter()
+	apiRouter.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"https://*", "http://*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
+		AllowCredentials: true,
+	}))
 	r.initGamesRoutes(apiRouter)
 	r.initSettingsRoutes(apiRouter)
 	r.initAuthRoutes(apiRouter)
