@@ -75,7 +75,7 @@ func (r *TeamsRepo) Create(ctx context.Context, team *models.Team) (int64, error
 			Credentials     string               `db:"credentials"`
 			BalanceID       int64                `db:"balance_id"`
 			Shares          any                  `db:"shares"`
-			AdditionalInfos any                  `db:"additional_infos"`
+			AdditionalInfos any                  `db:"additional_info_ids"`
 			RandomEventID   *int64               `db:"random_event_id"`
 			GameID          int64                `db:"game_id"`
 		}{
