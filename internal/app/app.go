@@ -90,6 +90,7 @@ func Run(cfg *config.Config) {
 		TeamsService:          teamsService,
 		AuthService:           authService,
 		AdditionalInfoService: additionalInfosService,
+		Log:                   log,
 	})
 
 	httpServer := server.New(server.Config{

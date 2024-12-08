@@ -27,6 +27,7 @@ type Config struct {
 	TeamsService          services.Teams
 	AuthService           services.Auth
 	AdditionalInfoService services.AdditionalInfos
+	Log                   *zerolog.Logger
 }
 
 func NewRouter(cfg Config) *Router {
@@ -38,6 +39,7 @@ func NewRouter(cfg Config) *Router {
 		teamService:           cfg.TeamsService,
 		authService:           cfg.AuthService,
 		additionalInfoService: cfg.AdditionalInfoService,
+		log:                   cfg.Log,
 	}
 
 	r.initRouter()
