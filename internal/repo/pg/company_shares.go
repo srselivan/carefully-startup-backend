@@ -29,10 +29,11 @@ type share struct {
 const companySharesQueryCreate = `
 insert into backend.company_share (company_id, round, price) 
 values (:company_id, :round, :price)
+returning id
 `
 
 func (r *CompanySharesRepo) Create(ctx context.Context, share *models.CompanyShare) (int64, error) {
-	result, err := r.db.NamedExecContext(
+	rows, err := r.db.NamedQueryContext(
 		ctx,
 		companySharesQueryCreate,
 		struct {
@@ -48,10 +49,16 @@ func (r *CompanySharesRepo) Create(ctx context.Context, share *models.CompanySha
 	if err != nil {
 		return 0, fmt.Errorf("query error: %w", err)
 	}
+	defer rows.Close()
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		return 0, fmt.Errorf("get inserted id: %w", err)
+	var id int64
+	for rows.Next() {
+		if err = rows.Scan(&id); err != nil {
+			return 0, fmt.Errorf("scan error: %w", err)
+		}
+	}
+	if err = rows.Err(); err != nil {
+		return 0, fmt.Errorf("rows error: %w", err)
 	}
 	return id, nil
 }
