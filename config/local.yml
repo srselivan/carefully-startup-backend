@@ -1,0 +1,17 @@
+http:
+  addr: "0.0.0.0:11864"
+
+postgres:
+  url: "postgres://investment_game_backend:investment_game_backend@127.0.0.1:5432/investment_game_backend?sslmode=disable&application_name=backend&search_path=investment_game_backend"
+  migrations_path: "file://./internal/repo/pg/migrations"
+
+jwt:
+  jwt_access_expiration_time: "3m"
+  jwt_refresh_expiration_time: "240h"
+  jwt_access_secret_key: "secretlalala"
+  jwt_refresh_secret_key: "secretlalala"
+
+admin:
+  username: "admin-qweqwe"
+  password: "admin-qweqwe"
+

@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  go-backend:
+    build: ./
+    ports:
+      - "11864:11864"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: investment_game_backend
+      POSTGRES_USER: investment_game_backend
+      POSTGRES_DB: investment_game_backend
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d investment_game_backend -U investment_game_backend" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+

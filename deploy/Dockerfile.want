@@ -1,0 +1,17 @@
+FROM golang:1.23.0 as builder
+ENV GO111MODULE=on
+ENV GOOS=linux
+WORKDIR /app/
+COPY ./go.mod .
+COPY ./go.sum .
+RUN go mod download
+COPY . .
+RUN cd cmd/app/ && go build -o backend-service
+
+FROM alpine:latest
+WORKDIR /app/
+COPY --from=builder /app/cmd/app/backend-service /app/
+COPY config/prod.yml ./config/
+ADD /internal/repo/pg/migrations migrations
+EXPOSE 11864
+ENTRYPOINT ["./backend-service"]
