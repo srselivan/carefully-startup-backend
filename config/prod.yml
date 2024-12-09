@@ -6,7 +6,7 @@ postgres:
   migrations_path: "file://./migrations"
 
 jwt:
-  jwt_access_expiration_time: "3m"
+  jwt_access_expiration_time: "2h"
   jwt_refresh_expiration_time: "240h"
   jwt_access_secret_key: "secretlalala"
   jwt_refresh_secret_key: "secretlalala"
