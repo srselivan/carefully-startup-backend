@@ -44,6 +44,7 @@ type Teams interface {
 	GetDetailedByID(ctx context.Context, id int64) (teams.DetailedTeam, error)
 	NotifyTradePeriodUpdated(isTrade bool)
 	NotifyGameRegistrationPeriodUpdated(idRegistration bool)
+	GetAllForCurrentGame(ctx context.Context) ([]models.Team, error)
 }
 
 type Auth interface {

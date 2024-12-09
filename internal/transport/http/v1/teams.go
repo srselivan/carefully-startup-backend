@@ -16,6 +16,7 @@ func (r *Router) initTeamsRoutes(router chi.Router) {
 		subRouter.Patch("/", r.updateTeam)
 		subRouter.Post("/purchase", r.teamPurchase)
 		subRouter.Get("/{team_id}", r.getTeamByID)
+		subRouter.Get("/", r.getAllTeams)
 	})
 }
 
@@ -166,6 +167,47 @@ func (r *Router) getTeamByID(resp http.ResponseWriter, req *http.Request) {
 				},
 			),
 			BalanceAmount: detailedTeam.Balance,
+		},
+	)
+	if err != nil {
+		r.log.Error().Err(err).Msg("marshal to json error")
+		resp.WriteHeader(http.StatusInternalServerError)
+		_, _ = resp.Write([]byte(http.StatusText(http.StatusInternalServerError)))
+		return
+	}
+
+	resp.WriteHeader(http.StatusOK)
+	_, _ = resp.Write(response)
+	return
+}
+
+type (
+	getAllTeamsResp struct {
+		Data []getAllTeamsRespItem `json:"data"`
+	}
+	getAllTeamsRespItem struct {
+		ID   int64  `json:"id"`
+		Name string `json:"name"`
+	}
+)
+
+func (r *Router) getAllTeams(resp http.ResponseWriter, req *http.Request) {
+	ts, err := r.teamService.GetAllForCurrentGame(req.Context())
+	if err != nil {
+		r.log.Error().Err(err).Msg("GetAllForCurrentGame error")
+		resp.WriteHeader(http.StatusInternalServerError)
+		_, _ = resp.Write([]byte(err.Error()))
+		return
+	}
+
+	response, err := jsoniter.Marshal(
+		getAllTeamsResp{
+			Data: lo.Map(ts, func(item models.Team, _ int) getAllTeamsRespItem {
+				return getAllTeamsRespItem{
+					ID:   item.ID,
+					Name: item.Name,
+				}
+			}),
 		},
 	)
 	if err != nil {

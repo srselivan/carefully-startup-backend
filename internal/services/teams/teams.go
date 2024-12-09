@@ -448,3 +448,17 @@ func (s *Service) NotifyGameRegistrationPeriodUpdated(idRegistration bool) {
 	s.log.Trace().Bool("is_registration", idRegistration).Msg("team service: NotifyGameRegistrationPeriodUpdated")
 	s.isRegistrationPeriod = idRegistration
 }
+
+func (s *Service) GetAllForCurrentGame(ctx context.Context) ([]models.Team, error) {
+	game, err := s.gamesRepo.Get(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("s.gamesRepo.Get: %w", err)
+	}
+
+	teams, err := s.teamsRepo.GetAllByGameID(ctx, game.CurrentGame)
+	if err != nil {
+		return nil, fmt.Errorf("s.teamsRepo.GetAllByGameID: %w", err)
+	}
+
+	return teams, nil
+}
