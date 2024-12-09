@@ -49,7 +49,7 @@ type TeamsRepo interface {
 	Create(ctx context.Context, team *models.Team) (int64, error)
 	Update(ctx context.Context, team *models.Team) error
 	DeleteBulk(ctx context.Context, ids []int64) error
-	GetByCredentials(ctx context.Context, credentials string) (*models.Team, error)
+	GetByCredentials(ctx context.Context, credentials string, gameID int64) (*models.Team, error)
 	GetByID(ctx context.Context, id int64) (*models.Team, error)
 	GetAllByGameID(ctx context.Context, gameID int64) ([]models.Team, error)
 }

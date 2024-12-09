@@ -197,12 +197,12 @@ select
     random_event_id,
     game_id
 from backend.team
-where credentials = $1
+where credentials = $1 and game_id = $2
 `
 
-func (r *TeamsRepo) GetByCredentials(ctx context.Context, credentials string) (*models.Team, error) {
+func (r *TeamsRepo) GetByCredentials(ctx context.Context, credentials string, gameID int64) (*models.Team, error) {
 	var t team
-	if err := r.db.GetContext(ctx, &t, teamsRepoQueryGetByCredentials, credentials); err != nil {
+	if err := r.db.GetContext(ctx, &t, teamsRepoQueryGetByCredentials, credentials, gameID); err != nil {
 		return nil, fmt.Errorf("query error: %w", err)
 	}
 	model := &models.Team{

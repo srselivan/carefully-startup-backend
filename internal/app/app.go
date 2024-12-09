@@ -52,6 +52,7 @@ func Run(cfg *config.Config) {
 	authService := auth.New(
 		teamsRepo,
 		authRepo,
+		gamesRepo,
 		auth.JWTConfig{
 			JWTAccessExpirationTime:  cfg.JWT.JWTAccessExpirationTime,
 			JWTRefreshExpirationTime: cfg.JWT.JWTRefreshExpirationTime,

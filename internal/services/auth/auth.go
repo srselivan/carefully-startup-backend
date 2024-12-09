@@ -16,6 +16,7 @@ const administratorTeamID int64 = -1
 type Service struct {
 	teamsRepo        repo.TeamsRepo
 	authRepo         repo.AuthRepo
+	gamesRepo        repo.GamesRepo
 	jwtConfig        JWTConfig
 	adminCredentials string
 	log              *zerolog.Logger
@@ -24,6 +25,7 @@ type Service struct {
 func New(
 	teamsRepo repo.TeamsRepo,
 	authRepo repo.AuthRepo,
+	gamesRepo repo.GamesRepo,
 	jwtConfig JWTConfig,
 	adminCredentials AdminCredentials,
 	log *zerolog.Logger,
@@ -31,6 +33,7 @@ func New(
 	return &Service{
 		teamsRepo:        teamsRepo,
 		authRepo:         authRepo,
+		gamesRepo:        gamesRepo,
 		jwtConfig:        jwtConfig,
 		adminCredentials: adminCredentials.String(),
 		log:              log,
@@ -38,12 +41,16 @@ func New(
 }
 
 func (s *Service) Login(ctx context.Context, credentials string) (models.JWTPair, error) {
+	game, err := s.gamesRepo.Get(ctx)
+	if err != nil {
+		return models.JWTPair{}, fmt.Errorf("failed to get game: %w", err)
+	}
 	var (
 		additionalClaims map[string]any
 		teamID           int64
 	)
 	if s.adminCredentials != credentials {
-		team, err := s.teamsRepo.GetByCredentials(ctx, credentials)
+		team, err := s.teamsRepo.GetByCredentials(ctx, credentials, game.CurrentGame)
 		if err != nil {
 			if errors.Is(err, repo.ErrNotFound) {
 				return models.JWTPair{}, errors.New("unsuccessful login")
