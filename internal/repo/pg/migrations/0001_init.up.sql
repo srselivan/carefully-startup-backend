@@ -87,6 +87,6 @@ create table if not exists backend.balance_transaction
 
 create table if not exists backend.team_refresh_token
 (
-    team_id bigint not null,
+    team_id bigint not null unique,
     token   text   not null
 );
