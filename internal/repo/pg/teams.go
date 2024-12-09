@@ -134,12 +134,14 @@ func (r *TeamsRepo) Update(ctx context.Context, team *models.Team) error {
 		ctx,
 		teamsRepoQueryUpdate,
 		struct {
+			ID              int64                `db:"id"`
 			Name            string               `db:"name"`
 			Members         pgtype.Array[string] `db:"members"`
 			Shares          any                  `db:"shares"`
 			AdditionalInfos any                  `db:"additional_info_ids"`
 			RandomEventID   *int64               `db:"random_event_id"`
 		}{
+			ID:   team.ID,
 			Name: team.Name,
 			Members: pgtype.Array[string]{
 				Elements: team.Members,
