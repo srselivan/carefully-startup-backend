@@ -70,11 +70,16 @@ func (r *Router) createCompanyWithShares(resp http.ResponseWriter, req *http.Req
 		return
 	}
 
+	shares := make(map[string]float64, len(request.Shares))
+	for key, val := range request.Shares {
+		shares[key] = val
+	}
+
 	response, err := jsoniter.Marshal(
 		createCompanyResp{
 			ID:     createdCompanyID,
 			Name:   request.Name,
-			Shares: request.Shares,
+			Shares: shares,
 		},
 	)
 	if err != nil {
