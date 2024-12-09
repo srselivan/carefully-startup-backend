@@ -13,6 +13,7 @@ import (
 
 func (r *Router) initTeamsRoutes(router chi.Router) {
 	router.Route("/team", func(subRouter chi.Router) {
+		subRouter.Use(r.AuthMiddleware)
 		subRouter.Patch("/", r.updateTeam)
 		subRouter.Post("/purchase", r.teamPurchase)
 		subRouter.Get("/{team_id}", r.getTeamByID)

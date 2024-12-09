@@ -13,6 +13,7 @@ import (
 
 func (r *Router) initCompanyRoutes(router chi.Router) {
 	router.Route("/company", func(companyRouter chi.Router) {
+		companyRouter.Use(r.AuthMiddleware)
 		companyRouter.Post("/", r.createCompanyWithShares)
 		companyRouter.Get("/", r.getCompaniesWithShares)
 		companyRouter.Put("/{company_id}", r.updateCompanyWithShares)
@@ -100,7 +101,10 @@ type (
 )
 
 func (r *Router) getCompaniesWithShares(resp http.ResponseWriter, req *http.Request) {
-	companyWithShares, err := r.companiesService.GetAllWithShares(req.Context(), false)
+	role := req.Context().Value("role").(string)
+	onlyCurrentRound := role != "admin"
+
+	companyWithShares, err := r.companiesService.GetAllWithShares(req.Context(), onlyCurrentRound)
 	if err != nil {
 		r.log.Error().Err(err).Msg("GetAllWithShares error")
 		resp.WriteHeader(http.StatusInternalServerError)

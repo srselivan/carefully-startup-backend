@@ -13,6 +13,7 @@ import (
 
 func (r *Router) initAdditionalInfosRoutes(router chi.Router) {
 	router.Route("/additional-info", func(subRouter chi.Router) {
+		subRouter.Use(r.AuthMiddleware)
 		subRouter.Post("/", r.createAdditionalInfo)
 		subRouter.Put("/{additional_info_id}", r.updateAdditionalInfo)
 		subRouter.Get("/", r.getAllActualAdditionalInfos)

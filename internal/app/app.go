@@ -96,6 +96,7 @@ func Run(cfg *config.Config) {
 	settingsService := settings.New(settingsRepo, gamesService.UpdateTradePeriod, log)
 
 	router := v1.NewRouter(v1.Config{
+		SecretJWT:             cfg.JWT.JWTAccessSecretKey,
 		SettingsService:       settingsService,
 		CompaniesService:      companiesService,
 		GamesService:          gamesService,
@@ -112,7 +113,7 @@ func Run(cfg *config.Config) {
 
 	go func() {
 		if err = httpServer.Run(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Error().Err(err).Msg("error on server run")
+			log.Fatal().Err(err).Msg("error on server run")
 		}
 	}()
 	log.Info().Msg("http server started on " + cfg.HTTP.Addr)

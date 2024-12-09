@@ -9,9 +9,9 @@ import (
 )
 
 type Router struct {
-	router chi.Router
-	log    *zerolog.Logger
-
+	router                chi.Router
+	log                   *zerolog.Logger
+	secretJWT             string
 	settingsService       services.Settings
 	companiesService      services.Companies
 	gamesService          services.Games
@@ -27,12 +27,14 @@ type Config struct {
 	TeamsService          services.Teams
 	AuthService           services.Auth
 	AdditionalInfoService services.AdditionalInfos
+	SecretJWT             string
 	Log                   *zerolog.Logger
 }
 
 func NewRouter(cfg Config) *Router {
 	r := Router{
 		router:                chi.NewRouter(),
+		secretJWT:             cfg.SecretJWT,
 		settingsService:       cfg.SettingsService,
 		companiesService:      cfg.CompaniesService,
 		gamesService:          cfg.GamesService,

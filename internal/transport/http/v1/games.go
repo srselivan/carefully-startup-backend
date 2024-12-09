@@ -11,6 +11,7 @@ import (
 
 func (r *Router) initGamesRoutes(router chi.Router) {
 	router.Route("/game", func(gameRouter chi.Router) {
+		gameRouter.Use(r.AuthMiddleware)
 		gameRouter.Get("/", r.getGame)
 		gameRouter.Put("/", r.updateGame)
 		gameRouter.Patch("/create", r.createNewGame)

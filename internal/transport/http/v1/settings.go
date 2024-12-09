@@ -11,6 +11,7 @@ import (
 
 func (r *Router) initSettingsRoutes(router chi.Router) {
 	router.Route("/settings", func(settingsRouter chi.Router) {
+		settingsRouter.Use(r.AuthMiddleware)
 		settingsRouter.Get("/", r.getSettings)
 		settingsRouter.Put("/", r.updateSettings)
 	})
