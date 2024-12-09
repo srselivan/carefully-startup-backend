@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jmoiron/sqlx"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/lib/pq"
@@ -71,19 +70,17 @@ func (r *TeamsRepo) Create(ctx context.Context, team *models.Team) (int64, error
 		ctx,
 		teamsRepoQueryCreate,
 		struct {
-			Name            string               `db:"name"`
-			Members         pgtype.Array[string] `db:"members"`
-			Credentials     string               `db:"credentials"`
-			BalanceID       int64                `db:"balance_id"`
-			Shares          any                  `db:"shares"`
-			AdditionalInfos any                  `db:"additional_info_ids"`
-			RandomEventID   *int64               `db:"random_event_id"`
-			GameID          int64                `db:"game_id"`
+			Name            string         `db:"name"`
+			Members         pq.StringArray `db:"members"`
+			Credentials     string         `db:"credentials"`
+			BalanceID       int64          `db:"balance_id"`
+			Shares          any            `db:"shares"`
+			AdditionalInfos any            `db:"additional_info_ids"`
+			RandomEventID   *int64         `db:"random_event_id"`
+			GameID          int64          `db:"game_id"`
 		}{
-			Name: team.Name,
-			Members: pgtype.Array[string]{
-				Elements: team.Members,
-			},
+			Name:            team.Name,
+			Members:         team.Members,
 			Credentials:     team.Credentials,
 			BalanceID:       team.BalanceID,
 			Shares:          team.Shares,
@@ -134,18 +131,16 @@ func (r *TeamsRepo) Update(ctx context.Context, team *models.Team) error {
 		ctx,
 		teamsRepoQueryUpdate,
 		struct {
-			ID              int64                `db:"id"`
-			Name            string               `db:"name"`
-			Members         pgtype.Array[string] `db:"members"`
-			Shares          any                  `db:"shares"`
-			AdditionalInfos any                  `db:"additional_info_ids"`
-			RandomEventID   *int64               `db:"random_event_id"`
+			ID              int64          `db:"id"`
+			Name            string         `db:"name"`
+			Members         pq.StringArray `db:"members"`
+			Shares          any            `db:"shares"`
+			AdditionalInfos any            `db:"additional_info_ids"`
+			RandomEventID   *int64         `db:"random_event_id"`
 		}{
-			ID:   team.ID,
-			Name: team.Name,
-			Members: pgtype.Array[string]{
-				Elements: team.Members,
-			},
+			ID:              team.ID,
+			Name:            team.Name,
+			Members:         team.Members,
 			Shares:          team.Shares,
 			AdditionalInfos: team.AdditionalInfos,
 			RandomEventID:   team.RandomEventID,
