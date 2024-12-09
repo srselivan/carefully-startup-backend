@@ -70,6 +70,9 @@ type (
 		SharesChanges    map[int64]int64 `json:"sharesChanges"`
 		AdditionalInfoID *int64          `json:"additionalInfoId"`
 	}
+	teamPurchaseResp struct {
+		BalanceAmount int64 `json:"balanceAmount"`
+	}
 )
 
 func (r *Router) teamPurchase(resp http.ResponseWriter, req *http.Request) {
@@ -89,21 +92,35 @@ func (r *Router) teamPurchase(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if err = r.teamService.Purchase(
+	amount, err := r.teamService.Purchase(
 		req.Context(),
 		teams.PurchaseParams{
 			TeamID:           request.TeamID,
 			SharesChanges:    request.SharesChanges,
 			AdditionalInfoID: request.AdditionalInfoID,
 		},
-	); err != nil {
+	)
+	if err != nil {
 		r.log.Error().Err(err).Msg("purchase error")
 		resp.WriteHeader(http.StatusInternalServerError)
 		_, _ = resp.Write([]byte(err.Error()))
 		return
 	}
 
+	response, err := jsoniter.Marshal(
+		teamPurchaseResp{
+			BalanceAmount: amount,
+		},
+	)
+	if err != nil {
+		r.log.Error().Err(err).Msg("marshal to json error")
+		resp.WriteHeader(http.StatusInternalServerError)
+		_, _ = resp.Write([]byte(http.StatusText(http.StatusInternalServerError)))
+		return
+	}
+
 	resp.WriteHeader(http.StatusOK)
+	_, _ = resp.Write(response)
 	return
 }
 

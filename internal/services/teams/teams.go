@@ -124,27 +124,27 @@ func (params PurchaseParams) Validate() error {
 	return nil
 }
 
-func (s *Service) Purchase(ctx context.Context, params PurchaseParams) error {
+func (s *Service) Purchase(ctx context.Context, params PurchaseParams) (int64, error) {
 	if !s.isTradePeriod {
 		s.log.Debug().Msg("cannot do purchase because is not trade period")
-		return errors.New("cannot do purchase because is not trade period")
+		return 0, errors.New("cannot do purchase because is not trade period")
 	}
 
 	if err := params.Validate(); err != nil {
-		return fmt.Errorf("params.Validate: %w", err)
+		return 0, fmt.Errorf("params.Validate: %w", err)
 	}
 
 	game, err := s.gamesRepo.Get(ctx)
 	if err != nil {
-		return fmt.Errorf("s.gamesRepo.Get: %w", err)
+		return 0, fmt.Errorf("s.gamesRepo.Get: %w", err)
 	}
 	team, err := s.teamsRepo.GetByID(ctx, params.TeamID)
 	if err != nil {
-		return fmt.Errorf("s.teamsRepo.GetByID: %w", err)
+		return 0, fmt.Errorf("s.teamsRepo.GetByID: %w", err)
 	}
 	balance, err := s.balancesRepo.GetByID(ctx, team.BalanceID)
 	if err != nil {
-		return fmt.Errorf("s.balancesRepo.GetByID: %w", err)
+		return 0, fmt.Errorf("s.balancesRepo.GetByID: %w", err)
 	}
 
 	purchaseAmount, err := s.getPurchaseAmount(
@@ -156,7 +156,7 @@ func (s *Service) Purchase(ctx context.Context, params PurchaseParams) error {
 		},
 	)
 	if err != nil {
-		return fmt.Errorf("s.getPurchaseAmount: %w", err)
+		return 0, fmt.Errorf("s.getPurchaseAmount: %w", err)
 	}
 
 	s.log.Trace().
@@ -176,7 +176,7 @@ func (s *Service) Purchase(ctx context.Context, params PurchaseParams) error {
 				amount:           purchaseAmount,
 			},
 		); err != nil {
-			return fmt.Errorf("s.purchaseAdditionalInfo: %w", err)
+			return 0, fmt.Errorf("s.purchaseAdditionalInfo: %w", err)
 		}
 	} else {
 		if err = s.purchaseShares(
@@ -188,7 +188,7 @@ func (s *Service) Purchase(ctx context.Context, params PurchaseParams) error {
 				amount:        purchaseAmount,
 			},
 		); err != nil {
-			return fmt.Errorf("s.purchaseShares: %w", err)
+			return 0, fmt.Errorf("s.purchaseShares: %w", err)
 		}
 	}
 
@@ -196,10 +196,10 @@ func (s *Service) Purchase(ctx context.Context, params PurchaseParams) error {
 		team.AdditionalInfos = append(team.AdditionalInfos, *params.AdditionalInfoID)
 	}
 	if err = s.teamsRepo.Update(ctx, team); err != nil {
-		return fmt.Errorf("s.teamsRepo.Update: %w", err)
+		return 0, fmt.Errorf("s.teamsRepo.Update: %w", err)
 	}
 
-	return nil
+	return balance.Amount, nil
 }
 
 type getPurchaseAmountParams struct {

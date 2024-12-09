@@ -40,7 +40,7 @@ type Companies interface {
 type Teams interface {
 	Create(ctx context.Context, params teams.CreateParams) (int64, error)
 	Update(ctx context.Context, params teams.UpdateParams) error
-	Purchase(ctx context.Context, params teams.PurchaseParams) error
+	Purchase(ctx context.Context, params teams.PurchaseParams) (int64, error)
 	GetDetailedByID(ctx context.Context, id int64) (teams.DetailedTeam, error)
 	NotifyTradePeriodUpdated(isTrade bool)
 	NotifyGameRegistrationPeriodUpdated(idRegistration bool)
