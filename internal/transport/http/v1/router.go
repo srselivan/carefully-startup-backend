@@ -3,8 +3,10 @@ package v1
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
+	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog"
 	"investment-game-backend/internal/services"
+	"investment-game-backend/internal/services/games"
 	"net/http"
 )
 
@@ -18,6 +20,8 @@ type Router struct {
 	teamService           services.Teams
 	authService           services.Auth
 	additionalInfoService services.AdditionalInfos
+	upgrader              websocket.Upgrader
+	teamsNotifier         *games.TeamsNotifier
 }
 
 type Config struct {
@@ -29,6 +33,7 @@ type Config struct {
 	AdditionalInfoService services.AdditionalInfos
 	SecretJWT             string
 	Log                   *zerolog.Logger
+	TeamsNotifier         *games.TeamsNotifier
 }
 
 func NewRouter(cfg Config) *Router {
@@ -42,6 +47,8 @@ func NewRouter(cfg Config) *Router {
 		authService:           cfg.AuthService,
 		additionalInfoService: cfg.AdditionalInfoService,
 		log:                   cfg.Log,
+		upgrader:              websocket.Upgrader{},
+		teamsNotifier:         cfg.TeamsNotifier,
 	}
 
 	r.initRouter()

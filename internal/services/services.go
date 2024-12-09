@@ -45,6 +45,7 @@ type Teams interface {
 	NotifyTradePeriodUpdated(isTrade bool)
 	NotifyGameRegistrationPeriodUpdated(idRegistration bool)
 	GetAllForCurrentGame(ctx context.Context) ([]models.Team, error)
+	PurchaseAdditionalInfoCompanyInfo(ctx context.Context, teamId int64) (models.AdditionalInfo, int64, error)
 }
 
 type Auth interface {

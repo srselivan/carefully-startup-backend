@@ -16,6 +16,7 @@ func (r *Router) initTeamsRoutes(router chi.Router) {
 		subRouter.Use(r.AuthMiddleware)
 		subRouter.Patch("/", r.updateTeam)
 		subRouter.Post("/purchase", r.teamPurchase)
+		subRouter.Post("/purchase/additional-info/{team_id}", r.teamPurchaseAdditionalInfo)
 		subRouter.Get("/{team_id}", r.getTeamByID)
 		subRouter.Get("/", r.getAllTeams)
 	})
@@ -136,7 +137,7 @@ type (
 		BalanceAmount     int64                           `json:"balanceAmount"`
 	}
 	getTeamByIDRespAdditionalInfo struct {
-		ID          int64  `json:"id,"`
+		ID          int64  `json:"id"`
 		Name        string `json:"name"`
 		Description string `json:"description"`
 		Type        int    `json:"type"`
@@ -226,6 +227,59 @@ func (r *Router) getAllTeams(resp http.ResponseWriter, req *http.Request) {
 					Name: item.Name,
 				}
 			}),
+		},
+	)
+	if err != nil {
+		r.log.Error().Err(err).Msg("marshal to json error")
+		resp.WriteHeader(http.StatusInternalServerError)
+		_, _ = resp.Write([]byte(http.StatusText(http.StatusInternalServerError)))
+		return
+	}
+
+	resp.WriteHeader(http.StatusOK)
+	_, _ = resp.Write(response)
+	return
+}
+
+type (
+	teamPurchaseAdditionalInfoResp struct {
+		ID            int64                     `json:"id"`
+		Name          string                    `json:"name"`
+		Description   string                    `json:"description"`
+		Type          models.AdditionalInfoType `json:"type"`
+		Cost          int64                     `json:"cost"`
+		CompanyID     *int64                    `json:"companyId"`
+		BalanceAmount int64                     `json:"balanceAmount"`
+	}
+)
+
+func (r *Router) teamPurchaseAdditionalInfo(resp http.ResponseWriter, req *http.Request) {
+	teamIDParam := chi.URLParam(req, "team_id")
+	teamID, err := strconv.Atoi(teamIDParam)
+	if err != nil {
+		r.log.Error().Err(err).Msg("get path param")
+		resp.WriteHeader(http.StatusInternalServerError)
+		_, _ = resp.Write([]byte(http.StatusText(http.StatusInternalServerError)))
+		return
+	}
+
+	addInfo, amount, err := r.teamService.PurchaseAdditionalInfoCompanyInfo(req.Context(), int64(teamID))
+	if err != nil {
+		r.log.Error().Err(err).Msg("purchase error")
+		resp.WriteHeader(http.StatusInternalServerError)
+		_, _ = resp.Write([]byte(err.Error()))
+		return
+	}
+
+	response, err := jsoniter.Marshal(
+		teamPurchaseAdditionalInfoResp{
+			ID:            addInfo.ID,
+			Name:          addInfo.Name,
+			Description:   addInfo.Description,
+			Type:          addInfo.Type,
+			Cost:          addInfo.Cost,
+			CompanyID:     addInfo.CompanyID,
+			BalanceAmount: amount,
 		},
 	)
 	if err != nil {

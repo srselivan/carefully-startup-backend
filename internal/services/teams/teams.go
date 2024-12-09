@@ -8,6 +8,7 @@ import (
 	"github.com/samber/lo"
 	"investment-game-backend/internal/models"
 	"investment-game-backend/internal/repo"
+	"math/rand"
 )
 
 type Service struct {
@@ -461,4 +462,64 @@ func (s *Service) GetAllForCurrentGame(ctx context.Context) ([]models.Team, erro
 	}
 
 	return teams, nil
+}
+
+var ErrNoAdditionalInfos = errors.New("no additional infos")
+
+func (s *Service) PurchaseAdditionalInfoCompanyInfo(ctx context.Context, teamId int64) (models.AdditionalInfo, int64, error) {
+	game, err := s.gamesRepo.Get(ctx)
+	if err != nil {
+		return models.AdditionalInfo{}, 0, fmt.Errorf("s.gamesRepo.Get: %w", err)
+	}
+	team, err := s.teamsRepo.GetByID(ctx, teamId)
+	if err != nil {
+		return models.AdditionalInfo{}, 0, fmt.Errorf("s.teamsRepo.GetByID: %w", err)
+	}
+	balance, err := s.balancesRepo.GetByID(ctx, team.BalanceID)
+	if err != nil {
+		return models.AdditionalInfo{}, 0, fmt.Errorf("s.balancesRepo.GetByID: %w", err)
+	}
+
+	additionalInfos, err := s.additionalInfosRepo.GetAllActualWithType(ctx, models.AdditionalInfoTypeCompanyInfo)
+	if err != nil {
+		return models.AdditionalInfo{}, 0, fmt.Errorf("s.additionalInfosRepo.GetAllActualWithType: %w", err)
+	}
+
+	infosMap := lo.SliceToMap(
+		additionalInfos,
+		func(item models.AdditionalInfo) (int64, models.AdditionalInfo) {
+			return item.ID, item
+		},
+	)
+	for _, id := range team.AdditionalInfos {
+		if _, ok := infosMap[id]; !ok {
+			delete(infosMap, id)
+		}
+	}
+	if len(infosMap) == 0 {
+		return models.AdditionalInfo{}, 0, ErrNoAdditionalInfos
+	}
+
+	infoIds := lo.Keys(infosMap)
+	additionalInfoToBuyID := rand.Intn(len(infoIds))
+	additionalInfoToBuy := infosMap[int64(additionalInfoToBuyID)]
+
+	if err = s.purchaseAdditionalInfo(
+		ctx,
+		purchaseAdditionalInfo{
+			game:             game,
+			balance:          balance,
+			additionalInfoID: &additionalInfoToBuy.ID,
+			amount:           additionalInfoToBuy.Cost,
+		},
+	); err != nil {
+		return models.AdditionalInfo{}, 0, fmt.Errorf("s.purchaseAdditionalInfo: %w", err)
+	}
+
+	team.AdditionalInfos = append(team.AdditionalInfos, additionalInfoToBuy.ID)
+	if err = s.teamsRepo.Update(ctx, team); err != nil {
+		return models.AdditionalInfo{}, 0, fmt.Errorf("s.teamsRepo.Update: %w", err)
+	}
+
+	return models.AdditionalInfo{}, balance.Amount, nil
 }

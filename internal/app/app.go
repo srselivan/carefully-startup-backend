@@ -82,6 +82,7 @@ func Run(cfg *config.Config) {
 		log,
 	)
 	additionalInfosService := additionalinfos.New(additionalInfosRepo, log)
+	teamNotifier := games.TeamsNotifier{}
 
 	settingTmp, err := settingsRepo.Get(context.Background())
 	if err != nil {
@@ -91,6 +92,7 @@ func Run(cfg *config.Config) {
 	gameController := &games.GameController{}
 
 	tradeController.RegisterNotify(teamsService.NotifyTradePeriodUpdated)
+	tradeController.RegisterNotify(teamNotifier.NotifyTradePeriodChanged)
 	gameController.RegisterNotify(teamsService.NotifyGameRegistrationPeriodUpdated)
 
 	gamesService := games.New(gamesRepo, tradeController, gameController, log)
@@ -105,6 +107,7 @@ func Run(cfg *config.Config) {
 		AuthService:           authService,
 		AdditionalInfoService: additionalInfosService,
 		Log:                   log,
+		TeamsNotifier:         &teamNotifier,
 	})
 
 	httpServer := server.New(server.Config{
