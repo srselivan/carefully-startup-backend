@@ -60,6 +60,7 @@ func (r *Router) initRouter() {
 	r.initAuthRoutes(apiRouter)
 	r.initCompanyRoutes(apiRouter)
 	r.initAdditionalInfosRoutes(apiRouter)
+	r.initTeamsRoutes(apiRouter)
 
 	r.router.Mount("/api", apiRouter)
 }
