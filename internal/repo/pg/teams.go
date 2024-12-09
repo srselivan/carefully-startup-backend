@@ -137,7 +137,7 @@ func (r *TeamsRepo) Update(ctx context.Context, team *models.Team) error {
 			Name            string               `db:"name"`
 			Members         pgtype.Array[string] `db:"members"`
 			Shares          any                  `db:"shares"`
-			AdditionalInfos any                  `db:"additional_infos"`
+			AdditionalInfos any                  `db:"additional_info_ids"`
 			RandomEventID   *int64               `db:"random_event_id"`
 		}{
 			Name: team.Name,
