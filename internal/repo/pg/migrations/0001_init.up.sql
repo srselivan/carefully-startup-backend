@@ -20,7 +20,7 @@ create table if not exists backend.game
     current_game  bigint not null
 );
 
-insert into backend.game (state, current_round, trade_state, current_game) values (0, 0, 0, 1);
+insert into backend.game (state, current_round, trade_state, current_game) values (3, 0, 0, 1);
 
 create table if not exists backend.company
 (

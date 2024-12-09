@@ -15,6 +15,7 @@ func (r *Router) initGamesRoutes(router chi.Router) {
 		gameRouter.Put("/", r.updateGame)
 		gameRouter.Patch("/create", r.createNewGame)
 		gameRouter.Patch("/start", r.startGame)
+		gameRouter.Patch("/stop", r.stopGame)
 		gameRouter.Patch("/registration/start", r.startRegistration)
 		gameRouter.Patch("/registration/stop", r.stopRegistration)
 		gameRouter.Patch("/round/start", r.startRound)
@@ -116,6 +117,17 @@ func (r *Router) createNewGame(resp http.ResponseWriter, req *http.Request) {
 func (r *Router) startGame(resp http.ResponseWriter, req *http.Request) {
 	if err := r.gamesService.StartGame(req.Context()); err != nil {
 		r.log.Error().Err(err).Msg("StartGame error")
+		resp.WriteHeader(http.StatusInternalServerError)
+		_, _ = resp.Write([]byte(err.Error()))
+		return
+	}
+	resp.WriteHeader(http.StatusOK)
+	return
+}
+
+func (r *Router) stopGame(resp http.ResponseWriter, req *http.Request) {
+	if err := r.gamesService.StopGame(req.Context()); err != nil {
+		r.log.Error().Err(err).Msg("StopGame error")
 		resp.WriteHeader(http.StatusInternalServerError)
 		_, _ = resp.Write([]byte(err.Error()))
 		return

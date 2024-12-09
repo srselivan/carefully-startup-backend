@@ -22,6 +22,7 @@ type Games interface {
 	UpdateTradePeriod(period time.Duration)
 	CreateNewGame(ctx context.Context) error
 	StartGame(ctx context.Context) error
+	StopGame(ctx context.Context) error
 	StartRegistration(ctx context.Context) error
 	StopRegistration(ctx context.Context) error
 	StartRound(ctx context.Context) error

@@ -128,6 +128,26 @@ func (s *Service) StartGame(ctx context.Context) error {
 	return nil
 }
 
+func (s *Service) StopGame(ctx context.Context) error {
+	s.log.Trace().Msg("stop game")
+
+	game, err := s.repo.Get(ctx)
+	if err != nil {
+		return fmt.Errorf("s.repo.Get: %w", err)
+	}
+
+	game.State = models.GameStateStopGenerally
+	s.onGameStateChange(models.GameStateStopGenerally)
+	game.CurrentRound = 0
+	game.TradeState = models.TradeStateNotStarted
+	s.tradeController.StopTradePeriod()
+
+	if err = s.repo.Update(ctx, game); err != nil {
+		return fmt.Errorf("s.repo.Update: %w", err)
+	}
+	return nil
+}
+
 func (s *Service) StartRegistration(ctx context.Context) error {
 	s.log.Trace().Msg("start registration")
 
@@ -219,6 +239,9 @@ func (s *Service) onGameStateChange(state models.GameState) {
 		s.log.Trace().Msg("stop registration period")
 		s.gameController.StopRegistrationPeriod()
 	case models.GameStateStarted:
+		s.log.Trace().Msg("stop registration period")
+		s.gameController.StopRegistrationPeriod()
+	case models.GameStateStopGenerally:
 		s.log.Trace().Msg("stop registration period")
 		s.gameController.StopRegistrationPeriod()
 	default:

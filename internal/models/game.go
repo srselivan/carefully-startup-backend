@@ -7,6 +7,7 @@ const (
 	GameStatePaused
 	GameStateOpened
 	GameStateStarted
+	GameStateStopGenerally
 )
 
 type TradeState int8
