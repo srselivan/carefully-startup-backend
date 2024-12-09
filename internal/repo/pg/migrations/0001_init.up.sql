@@ -67,12 +67,13 @@ create table if not exists backend.team
     updated_at          timestamptz,
     name                text        not null,
     members             text[],
-    credentials         text        not null unique,
+    credentials         text        not null,
     balance_id          bigint      not null references backend.balance (id),
     shares              jsonb,
     additional_info_ids jsonb,
     random_event_id     bigint references backend.random_event (id),
-    game_id             bigint      not null
+    game_id             bigint      not null,
+    unique (credentials, game_id)
 );
 
 create table if not exists backend.balance_transaction
