@@ -19,6 +19,14 @@ type Settings interface {
 type Games interface {
 	Get(ctx context.Context) (*models.Game, error)
 	Update(ctx context.Context, params games.UpdateParams) error
+	UpdateTradePeriod(period time.Duration)
+	CreateNewGame(ctx context.Context) error
+	StartGame(ctx context.Context) error
+	StartRegistration(ctx context.Context) error
+	StopRegistration(ctx context.Context) error
+	StartRound(ctx context.Context) error
+	StartTrade(ctx context.Context) error
+	StopTrade(_ context.Context)
 }
 
 type Companies interface {
@@ -33,6 +41,8 @@ type Teams interface {
 	Update(ctx context.Context, params teams.UpdateParams) error
 	Purchase(ctx context.Context, params teams.PurchaseParams) error
 	GetDetailedByID(ctx context.Context, id int64) (teams.DetailedTeam, error)
+	NotifyTradePeriodUpdated(isTrade bool)
+	NotifyGameRegistrationPeriodUpdated(idRegistration bool)
 }
 
 type Auth interface {

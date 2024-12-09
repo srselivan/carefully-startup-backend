@@ -97,7 +97,7 @@ func (r *Router) teamPurchase(resp http.ResponseWriter, req *http.Request) {
 	); err != nil {
 		r.log.Error().Err(err).Msg("purchase error")
 		resp.WriteHeader(http.StatusInternalServerError)
-		_, _ = resp.Write([]byte(http.StatusText(http.StatusInternalServerError)))
+		_, _ = resp.Write([]byte(err.Error()))
 		return
 	}
 

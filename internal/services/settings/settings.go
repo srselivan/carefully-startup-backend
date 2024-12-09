@@ -10,17 +10,20 @@ import (
 )
 
 type Service struct {
-	repo repo.SettingsRepo
-	log  *zerolog.Logger
+	repo                      repo.SettingsRepo
+	updateTradePeriodCallback func(time.Duration)
+	log                       *zerolog.Logger
 }
 
 func New(
 	repo repo.SettingsRepo,
+	updateTradePeriodCallback func(time.Duration),
 	log *zerolog.Logger,
 ) *Service {
 	return &Service{
-		repo: repo,
-		log:  log,
+		repo:                      repo,
+		updateTradePeriodCallback: updateTradePeriodCallback,
+		log:                       log,
 	}
 }
 
@@ -46,6 +49,9 @@ func (s *Service) Update(ctx context.Context, params UpdateParams) error {
 	}
 
 	settings.RoundsCount = params.RoundsCount
+	if settings.RoundsDuration != params.RoundsDuration {
+		s.updateTradePeriodCallback(params.RoundsDuration)
+	}
 	settings.RoundsDuration = params.RoundsDuration
 	settings.EnableRandomEvents = params.EnableRandomEvents
 	settings.LinkToPDF = params.LinkToPDF

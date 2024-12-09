@@ -19,9 +19,10 @@ func NewGamesRepo(db *sqlx.DB) *GamesRepo {
 }
 
 type game struct {
-	State        int8 `db:"state"`
-	CurrentRound int  `db:"current_round"`
-	RoundState   int8 `db:"round_state"`
+	State        int8  `db:"state"`
+	CurrentRound int   `db:"current_round"`
+	TradeState   int8  `db:"trade_state"`
+	CurrentGame  int64 `db:"current_game"`
 }
 
 const gamesRepoUpdateQuery = `
@@ -29,11 +30,13 @@ update backend.game
 set (
     state,
     current_round,
-    round_state
+    trade_state,
+    current_game
 ) = (
     :state,
     :current_round,
-    :round_state
+    :trade_state,
+    :current_game
 )
 where id = 1
 `
@@ -43,13 +46,15 @@ func (r *GamesRepo) Update(ctx context.Context, game *models.Game) error {
 		ctx,
 		gamesRepoUpdateQuery,
 		struct {
-			State        int8 `db:"state"`
-			CurrentRound int  `db:"current_round"`
-			RoundState   int8 `db:"round_state"`
+			State        int8  `db:"state"`
+			CurrentRound int   `db:"current_round"`
+			TradeState   int8  `db:"trade_state"`
+			CurrentGame  int64 `db:"current_game"`
 		}{
 			State:        int8(game.State),
 			CurrentRound: game.CurrentRound,
-			RoundState:   int8(game.RoundState),
+			TradeState:   int8(game.TradeState),
+			CurrentGame:  game.CurrentGame,
 		},
 	)
 	if err != nil {
@@ -70,7 +75,8 @@ const gamesRepoGetQuery = `
 select 
     state,
     current_round,
-    round_state
+    trade_state,
+    current_game
 from backend.game
 where id = 1
 `
@@ -86,6 +92,7 @@ func (r *GamesRepo) Get(ctx context.Context) (*models.Game, error) {
 	return &models.Game{
 		State:        models.GameState(g.State),
 		CurrentRound: g.CurrentRound,
-		RoundState:   models.RoundState(g.RoundState),
+		TradeState:   models.TradeState(g.TradeState),
+		CurrentGame:  g.CurrentGame,
 	}, nil
 }

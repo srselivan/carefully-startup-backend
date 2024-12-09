@@ -6,18 +6,19 @@ const (
 	GameStateClosed GameState = iota - 1
 	GameStatePaused
 	GameStateOpened
+	GameStateStarted
 )
 
-type RoundState int8
+type TradeState int8
 
 const (
-	RoundStateNotStarted RoundState = iota - 1
-	RoundStatePaused
-	RoundStateStarted
+	TradeStateNotStarted TradeState = iota
+	TradeStateStarted
 )
 
 type Game struct {
 	State        GameState
 	CurrentRound int
-	RoundState   RoundState
+	TradeState   TradeState
+	CurrentGame  int64
 }

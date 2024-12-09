@@ -19,6 +19,8 @@ type Service struct {
 	sharesRepo              repo.CompanySharesRepo
 	gamesRepo               repo.GamesRepo
 	log                     *zerolog.Logger
+	isTradePeriod           bool
+	isRegistrationPeriod    bool
 }
 
 func New(
@@ -49,6 +51,11 @@ type CreateParams struct {
 }
 
 func (s *Service) Create(ctx context.Context, params CreateParams) (int64, error) {
+	if !s.isRegistrationPeriod {
+		s.log.Debug().Msg("cannot create team because is not registration period")
+		return 0, errors.New("cannot create team because is not registration period")
+	}
+
 	settings, err := s.settingsRepo.Get(ctx)
 	if err != nil {
 		return 0, fmt.Errorf("s.settingsRepo.Get: %w", err)
@@ -62,13 +69,18 @@ func (s *Service) Create(ctx context.Context, params CreateParams) (int64, error
 		return 0, fmt.Errorf("s.balancesRepo.Create: %w", err)
 	}
 
+	game, err := s.gamesRepo.Get(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("s.gamesRepo.Get: %w", err)
+	}
+
 	teamID, err := s.teamsRepo.Create(
 		ctx,
 		&models.Team{
 			Name:        params.Name,
 			Credentials: params.Credentials,
 			BalanceID:   balanceID,
-			GameID:      1,
+			GameID:      game.CurrentGame,
 		},
 	)
 	if err != nil {
@@ -113,6 +125,11 @@ func (params PurchaseParams) Validate() error {
 }
 
 func (s *Service) Purchase(ctx context.Context, params PurchaseParams) error {
+	if !s.isTradePeriod {
+		s.log.Debug().Msg("cannot do purchase because is not trade period")
+		return errors.New("cannot do purchase because is not trade period")
+	}
+
 	if err := params.Validate(); err != nil {
 		return fmt.Errorf("params.Validate: %w", err)
 	}
@@ -141,6 +158,13 @@ func (s *Service) Purchase(ctx context.Context, params PurchaseParams) error {
 	if err != nil {
 		return fmt.Errorf("s.getPurchaseAmount: %w", err)
 	}
+
+	s.log.Trace().
+		Int64("purchase_amount", purchaseAmount).
+		Int64("team_id", team.ID).
+		Str("team_name", team.Name).
+		Int64("balance", balance.Amount).
+		Msg("do purchase")
 
 	if params.AdditionalInfoID != nil {
 		if err = s.purchaseAdditionalInfo(
@@ -413,4 +437,14 @@ func (s *Service) GetDetailedByID(ctx context.Context, id int64) (DetailedTeam, 
 		AdditionalInfos: additionalInfos,
 		Balance:         balance.Amount,
 	}, nil
+}
+
+func (s *Service) NotifyTradePeriodUpdated(isTrade bool) {
+	s.log.Trace().Bool("is_trade", isTrade).Msg("team service: NotifyTradePeriodUpdated")
+	s.isTradePeriod = isTrade
+}
+
+func (s *Service) NotifyGameRegistrationPeriodUpdated(idRegistration bool) {
+	s.log.Trace().Bool("is_registration", idRegistration).Msg("team service: NotifyGameRegistrationPeriodUpdated")
+	s.isRegistrationPeriod = idRegistration
 }

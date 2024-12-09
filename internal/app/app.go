@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"errors"
 	"investment-game-backend/internal/config"
 	pgrepo "investment-game-backend/internal/repo/pg"
@@ -22,7 +23,7 @@ import (
 
 func Run(cfg *config.Config) {
 	log := logger.New(logger.Config{
-		Level:         "debug",
+		Level:         "trace",
 		FilePath:      "",
 		NeedLogToFile: false,
 	})
@@ -69,8 +70,6 @@ func Run(cfg *config.Config) {
 		gamesRepo,
 		log,
 	)
-	gamesService := games.New(gamesRepo, log)
-	settingsService := settings.New(settingsRepo, log)
 	teamsService := teams.New(
 		teamsRepo,
 		balancesRepo,
@@ -82,6 +81,19 @@ func Run(cfg *config.Config) {
 		log,
 	)
 	additionalInfosService := additionalinfos.New(additionalInfosRepo, log)
+
+	settingTmp, err := settingsRepo.Get(context.Background())
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to get settings")
+	}
+	tradeController := games.NewTradeController(settingTmp.RoundsDuration)
+	gameController := &games.GameController{}
+
+	tradeController.RegisterNotify(teamsService.NotifyTradePeriodUpdated)
+	gameController.RegisterNotify(teamsService.NotifyGameRegistrationPeriodUpdated)
+
+	gamesService := games.New(gamesRepo, tradeController, gameController, log)
+	settingsService := settings.New(settingsRepo, gamesService.UpdateTradePeriod, log)
 
 	router := v1.NewRouter(v1.Config{
 		SettingsService:       settingsService,

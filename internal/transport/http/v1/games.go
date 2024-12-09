@@ -13,6 +13,13 @@ func (r *Router) initGamesRoutes(router chi.Router) {
 	router.Route("/game", func(gameRouter chi.Router) {
 		gameRouter.Get("/", r.getGame)
 		gameRouter.Put("/", r.updateGame)
+		gameRouter.Patch("/create", r.createNewGame)
+		gameRouter.Patch("/start", r.startGame)
+		gameRouter.Patch("/registration/start", r.startRegistration)
+		gameRouter.Patch("/registration/stop", r.stopRegistration)
+		gameRouter.Patch("/round/start", r.startRound)
+		gameRouter.Patch("/trade/start", r.startTrade)
+		gameRouter.Patch("/trade/stop", r.stopTrade)
 	})
 }
 
@@ -20,7 +27,7 @@ type (
 	getGameResp struct {
 		State        models.GameState  `json:"state"`
 		CurrentRound int               `json:"currentRound"`
-		RoundState   models.RoundState `json:"roundState"`
+		TradeState   models.TradeState `json:"tradeState"`
 	}
 )
 
@@ -37,7 +44,7 @@ func (r *Router) getGame(resp http.ResponseWriter, req *http.Request) {
 		getGameResp{
 			State:        game.State,
 			CurrentRound: game.CurrentRound,
-			RoundState:   game.RoundState,
+			TradeState:   game.TradeState,
 		},
 	)
 	if err != nil {
@@ -56,7 +63,7 @@ type (
 	updateGameReq struct {
 		State        models.GameState  `json:"state"`
 		CurrentRound int               `json:"currentRound"`
-		RoundState   models.RoundState `json:"roundState"`
+		TradeState   models.TradeState `json:"tradeState"`
 	}
 )
 
@@ -82,7 +89,7 @@ func (r *Router) updateGame(resp http.ResponseWriter, req *http.Request) {
 		gamesservice.UpdateParams{
 			State:        request.State,
 			CurrentRound: request.CurrentRound,
-			RoundState:   request.RoundState,
+			TradeState:   request.TradeState,
 		},
 	); err != nil {
 		r.log.Error().Err(err).Msg("games service: update error")
@@ -92,5 +99,77 @@ func (r *Router) updateGame(resp http.ResponseWriter, req *http.Request) {
 	}
 
 	resp.WriteHeader(http.StatusAccepted)
+	return
+}
+
+func (r *Router) createNewGame(resp http.ResponseWriter, req *http.Request) {
+	if err := r.gamesService.CreateNewGame(req.Context()); err != nil {
+		r.log.Error().Err(err).Msg("StartNewGame error")
+		resp.WriteHeader(http.StatusInternalServerError)
+		_, _ = resp.Write([]byte(err.Error()))
+		return
+	}
+	resp.WriteHeader(http.StatusOK)
+	return
+}
+
+func (r *Router) startGame(resp http.ResponseWriter, req *http.Request) {
+	if err := r.gamesService.StartGame(req.Context()); err != nil {
+		r.log.Error().Err(err).Msg("StartGame error")
+		resp.WriteHeader(http.StatusInternalServerError)
+		_, _ = resp.Write([]byte(err.Error()))
+		return
+	}
+	resp.WriteHeader(http.StatusOK)
+	return
+}
+
+func (r *Router) startRegistration(resp http.ResponseWriter, req *http.Request) {
+	if err := r.gamesService.StartRegistration(req.Context()); err != nil {
+		r.log.Error().Err(err).Msg("StartRegistration error")
+		resp.WriteHeader(http.StatusInternalServerError)
+		_, _ = resp.Write([]byte(err.Error()))
+		return
+	}
+	resp.WriteHeader(http.StatusOK)
+	return
+}
+
+func (r *Router) stopRegistration(resp http.ResponseWriter, req *http.Request) {
+	if err := r.gamesService.StopRegistration(req.Context()); err != nil {
+		r.log.Error().Err(err).Msg("StopRegistration error")
+		resp.WriteHeader(http.StatusInternalServerError)
+		_, _ = resp.Write([]byte(err.Error()))
+		return
+	}
+	resp.WriteHeader(http.StatusOK)
+	return
+}
+
+func (r *Router) startRound(resp http.ResponseWriter, req *http.Request) {
+	if err := r.gamesService.StartRound(req.Context()); err != nil {
+		r.log.Error().Err(err).Msg("StartRound error")
+		resp.WriteHeader(http.StatusInternalServerError)
+		_, _ = resp.Write([]byte(err.Error()))
+		return
+	}
+	resp.WriteHeader(http.StatusOK)
+	return
+}
+
+func (r *Router) startTrade(resp http.ResponseWriter, req *http.Request) {
+	if err := r.gamesService.StartTrade(req.Context()); err != nil {
+		r.log.Error().Err(err).Msg("StartTrade error")
+		resp.WriteHeader(http.StatusInternalServerError)
+		_, _ = resp.Write([]byte(err.Error()))
+		return
+	}
+	resp.WriteHeader(http.StatusOK)
+	return
+}
+
+func (r *Router) stopTrade(resp http.ResponseWriter, req *http.Request) {
+	r.gamesService.StopTrade(req.Context())
+	resp.WriteHeader(http.StatusOK)
 	return
 }
