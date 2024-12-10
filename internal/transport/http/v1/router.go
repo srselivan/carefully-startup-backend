@@ -70,6 +70,7 @@ func (r *Router) initRouter() {
 	r.initCompanyRoutes(apiRouter)
 	r.initAdditionalInfosRoutes(apiRouter)
 	r.initTeamsRoutes(apiRouter)
+	r.initWebsocketRouter(apiRouter)
 
 	r.router.Mount("/api", apiRouter)
 }
