@@ -13,6 +13,7 @@ type Service struct {
 	repo            repo.GamesRepo
 	tradeController *TradeController
 	gameController  *GameController
+	notifier        *TeamsNotifier
 	log             *zerolog.Logger
 }
 
@@ -20,12 +21,14 @@ func New(
 	repo repo.GamesRepo,
 	tradeController *TradeController,
 	gameController *GameController,
+	notifier *TeamsNotifier,
 	log *zerolog.Logger,
 ) *Service {
 	return &Service{
 		repo:            repo,
 		tradeController: tradeController,
 		gameController:  gameController,
+		notifier:        notifier,
 		log:             log,
 	}
 }
@@ -117,6 +120,7 @@ func (s *Service) StartGame(ctx context.Context) error {
 	}
 
 	game.State = models.GameStateStarted
+	s.notifier.NotifyGameStateChanged(game.State)
 	s.onGameStateChange(models.GameStateStarted)
 	game.CurrentRound = 0
 	game.TradeState = models.TradeStateNotStarted
@@ -137,6 +141,7 @@ func (s *Service) StopGame(ctx context.Context) error {
 	}
 
 	game.State = models.GameStateStopGenerally
+	s.notifier.NotifyGameStateChanged(game.State)
 	s.onGameStateChange(models.GameStateStopGenerally)
 	game.CurrentRound = 0
 	game.TradeState = models.TradeStateNotStarted

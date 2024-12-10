@@ -59,7 +59,7 @@ func NewRouter(cfg Config) *Router {
 func (r *Router) initRouter() {
 	apiRouter := chi.NewRouter()
 	apiRouter.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"https://*", "http://*"},
+		AllowedOrigins:   []string{"https://*", "http://*", "ws://*", "wss://*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
 		AllowCredentials: true,
