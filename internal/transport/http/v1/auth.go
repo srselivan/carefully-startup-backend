@@ -147,7 +147,7 @@ func (r *Router) refresh(resp http.ResponseWriter, req *http.Request) {
 
 	jwtPair, err := r.authService.Refresh(req.Context(), refreshToken)
 	if err != nil {
-		r.log.Error().Err(err).Msg("refresh error")
+		r.log.Error().Err(err).Str("token", refreshToken).Msg("refresh error")
 		resp.WriteHeader(http.StatusInternalServerError)
 		_, _ = resp.Write([]byte(http.StatusText(http.StatusInternalServerError)))
 		return

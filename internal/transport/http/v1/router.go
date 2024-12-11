@@ -47,8 +47,10 @@ func NewRouter(cfg Config) *Router {
 		authService:           cfg.AuthService,
 		additionalInfoService: cfg.AdditionalInfoService,
 		log:                   cfg.Log,
-		upgrader:              websocket.Upgrader{},
-		teamsNotifier:         cfg.TeamsNotifier,
+		upgrader: websocket.Upgrader{
+			CheckOrigin: func(r *http.Request) bool { return true },
+		},
+		teamsNotifier: cfg.TeamsNotifier,
 	}
 
 	r.initRouter()
