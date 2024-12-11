@@ -138,7 +138,7 @@ func (r *Router) getCompaniesWithShares(resp http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	resp.WriteHeader(http.StatusCreated)
+	resp.WriteHeader(http.StatusOK)
 	_, _ = resp.Write(response)
 	return
 }

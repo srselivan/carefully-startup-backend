@@ -45,6 +45,29 @@ func (n *TeamsNotifier) NotifyTradePeriodChanged(isTrade bool) {
 	}
 }
 
+type roundPeriodChangedMessage struct {
+	IsRoundStage bool `json:"isRoundStage"`
+}
+
+func (n *TeamsNotifier) NotifyRoundPeriodChanged(isRound bool) {
+	msg, _ := jsoniter.Marshal(roundPeriodChangedMessage{IsRoundStage: isRound})
+
+	n.mx.Lock()
+	defer n.mx.Unlock()
+
+	n.log.Trace().
+		Bool("is_round_period", isRound).
+		Int("conns_count", len(n.conns)).
+		Msg("notify: round period changed")
+
+	for conn := range n.conns {
+		if err := conn.WriteMessage(websocket.TextMessage, msg); err != nil {
+			n.RemoveConnection(conn)
+			_ = conn.Close()
+		}
+	}
+}
+
 type gameStateChangedMessage struct {
 	GameState models.GameState `json:"gameState"`
 }

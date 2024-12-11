@@ -20,6 +20,7 @@ func (r *Router) initGamesRoutes(router chi.Router) {
 		gameRouter.Patch("/registration/start", r.startRegistration)
 		gameRouter.Patch("/registration/stop", r.stopRegistration)
 		gameRouter.Patch("/round/start", r.startRound)
+		gameRouter.Patch("/round/stop", r.stopRound)
 		gameRouter.Patch("/trade/start", r.startTrade)
 		gameRouter.Patch("/trade/stop", r.stopTrade)
 	})
@@ -166,6 +167,12 @@ func (r *Router) startRound(resp http.ResponseWriter, req *http.Request) {
 		_, _ = resp.Write([]byte(err.Error()))
 		return
 	}
+	resp.WriteHeader(http.StatusOK)
+	return
+}
+
+func (r *Router) stopRound(resp http.ResponseWriter, req *http.Request) {
+	_ = r.gamesService.StopRound(req.Context())
 	resp.WriteHeader(http.StatusOK)
 	return
 }

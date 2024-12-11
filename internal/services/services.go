@@ -26,6 +26,7 @@ type Games interface {
 	StartRegistration(ctx context.Context) error
 	StopRegistration(ctx context.Context) error
 	StartRound(ctx context.Context) error
+	StopRound(_ context.Context) error
 	StartTrade(ctx context.Context) error
 	StopTrade(_ context.Context)
 }

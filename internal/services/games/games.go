@@ -195,9 +195,16 @@ func (s *Service) StartRound(ctx context.Context) error {
 		return fmt.Errorf("s.repo.Get: %w", err)
 	}
 	game.CurrentRound++
+	s.notifier.NotifyRoundPeriodChanged(true)
 	if err = s.repo.Update(ctx, game); err != nil {
 		return fmt.Errorf("s.repo.Update: %w", err)
 	}
+	return nil
+}
+
+func (s *Service) StopRound(_ context.Context) error {
+	s.log.Trace().Msg("stop round")
+	s.notifier.NotifyRoundPeriodChanged(false)
 	return nil
 }
 
