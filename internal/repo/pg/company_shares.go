@@ -207,7 +207,7 @@ func (r *CompanySharesRepo) GetListByCompanyIDsAndRound(
 	companyIDs []int64,
 	round int,
 ) ([]models.CompanyShare, error) {
-	query, args, err := sqlx.In(companySharesQueryGetListByIDs, companyIDs)
+	query, args, err := sqlx.In(companySharesQueryGetListByCompanyIDAndRound, companyIDs)
 	if err != nil {
 		return nil, fmt.Errorf("sqlx.In: %w", err)
 	}
