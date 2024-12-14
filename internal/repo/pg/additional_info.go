@@ -192,7 +192,7 @@ select
     ai.company_id,
     ai.cost
 from backend.additional_info ai
-where id = $1
+where id in (?)
 `
 
 func (r *AdditionalInfosRepo) GetByIDs(ctx context.Context, ids []int64) ([]models.AdditionalInfo, error) {
