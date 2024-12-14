@@ -203,7 +203,7 @@ func (r *AdditionalInfosRepo) GetByIDs(ctx context.Context, ids []int64) ([]mode
 	query = r.db.Rebind(query)
 
 	var infos []additionalInfo
-	if err = r.db.SelectContext(ctx, &infos, additionalInfosQueryGetByIDs, args...); err != nil {
+	if err = r.db.SelectContext(ctx, &infos, query, args...); err != nil {
 		return nil, fmt.Errorf("query error: %w", err)
 	}
 	return lo.Map(
