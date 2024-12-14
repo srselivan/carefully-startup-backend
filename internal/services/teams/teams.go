@@ -587,7 +587,7 @@ func (s *Service) PurchaseAdditionalInfoCompanyInfo(ctx context.Context, teamId 
 		return models.AdditionalInfo{}, 0, fmt.Errorf("s.teamsRepo.Update: %w", err)
 	}
 
-	return models.AdditionalInfo{}, balance.Amount, nil
+	return additionalInfoToBuy, balance.Amount, nil
 }
 
 func (s *Service) ResetTransaction(ctx context.Context, teamID int64) (DetailedTeam, error) {
