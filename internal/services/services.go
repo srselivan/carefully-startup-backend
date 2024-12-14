@@ -60,4 +60,5 @@ type AdditionalInfos interface {
 	Create(ctx context.Context, params additionalinfos.CreateParams) (*models.AdditionalInfo, error)
 	Update(ctx context.Context, params additionalinfos.UpdateParams) error
 	GetActualListByType(ctx context.Context, infoType models.AdditionalInfoType) ([]models.AdditionalInfo, error)
+	Delete(ctx context.Context, id int64) error
 }

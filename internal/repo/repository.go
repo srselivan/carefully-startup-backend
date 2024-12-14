@@ -37,6 +37,7 @@ type AdditionalInfosRepo interface {
 	GetAllActualWithType(ctx context.Context, infoType models.AdditionalInfoType) ([]models.AdditionalInfo, error)
 	GetByID(ctx context.Context, id int64) (*models.AdditionalInfo, error)
 	GetByIDs(ctx context.Context, ids []int64) ([]models.AdditionalInfo, error)
+	Delete(ctx context.Context, id int64) error
 }
 
 type BalancesRepo interface {

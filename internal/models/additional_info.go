@@ -14,4 +14,5 @@ type AdditionalInfo struct {
 	Type        AdditionalInfoType
 	Cost        int64
 	CompanyID   *int64
+	Round       int
 }

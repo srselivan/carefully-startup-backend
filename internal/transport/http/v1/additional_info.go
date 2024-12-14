@@ -27,6 +27,7 @@ type (
 		Type        models.AdditionalInfoType `json:"type"`
 		Cost        int64                     `json:"cost"`
 		CompanyID   *int64                    `json:"companyId"`
+		Round       int                       `json:"round"`
 	}
 	createAdditionalInfoResp struct {
 		ID          int64                     `json:"id"`
@@ -35,6 +36,7 @@ type (
 		Type        models.AdditionalInfoType `json:"type"`
 		Cost        int64                     `json:"cost"`
 		CompanyID   *int64                    `json:"companyId"`
+		Round       int                       `json:"round"`
 	}
 )
 
@@ -63,6 +65,7 @@ func (r *Router) createAdditionalInfo(resp http.ResponseWriter, req *http.Reques
 			Type:        request.Type,
 			Cost:        request.Cost,
 			CompanyID:   request.CompanyID,
+			Round:       request.Round,
 		},
 	)
 	if err != nil {
@@ -80,6 +83,7 @@ func (r *Router) createAdditionalInfo(resp http.ResponseWriter, req *http.Reques
 			Type:        additionalInfo.Type,
 			Cost:        additionalInfo.Cost,
 			CompanyID:   additionalInfo.CompanyID,
+			Round:       additionalInfo.Round,
 		},
 	)
 	if err != nil {
@@ -101,6 +105,7 @@ type (
 		Type        models.AdditionalInfoType `json:"type"`
 		Cost        int64                     `json:"cost"`
 		CompanyID   *int64                    `json:"companyId"`
+		Round       int                       `json:"round"`
 	}
 )
 
@@ -138,6 +143,7 @@ func (r *Router) updateAdditionalInfo(resp http.ResponseWriter, req *http.Reques
 			Description: request.Description,
 			Cost:        request.Cost,
 			CompanyID:   request.CompanyID,
+			Round:       request.Round,
 		},
 	)
 	if err != nil {
@@ -162,6 +168,7 @@ type (
 		Type        int    `json:"type"`
 		Cost        int64  `json:"cost"`
 		CompanyID   *int64 `json:"companyId"`
+		Round       int    `json:"round"`
 	}
 )
 
@@ -200,6 +207,7 @@ func (r *Router) getAllActualAdditionalInfos(resp http.ResponseWriter, req *http
 						Type:        int(item.Type),
 						Cost:        item.Cost,
 						CompanyID:   item.CompanyID,
+						Round:       item.Round,
 					}
 				},
 			),

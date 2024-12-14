@@ -9,7 +9,8 @@ create table if not exists backend.settings
     default_additional_info_cost bigint  not null
 );
 
-insert into backend.settings (rounds_count, rounds_duration, link_to_pdf, enable_random_events, default_balance_amount, default_additional_info_cost)
+insert into backend.settings (rounds_count, rounds_duration, link_to_pdf, enable_random_events, default_balance_amount,
+                              default_additional_info_cost)
 values (3, 600000000000, 'https://google.com', false, 1000, 100);
 
 create table if not exists backend.game
@@ -47,7 +48,8 @@ create table if not exists backend.additional_info
     description text     not null,
     type        smallint not null,
     cost        bigint   not null,
-    company_id  bigint references backend.company (id)
+    company_id  bigint references backend.company (id),
+    round       bigint   not null
 );
 
 create table if not exists backend.random_event

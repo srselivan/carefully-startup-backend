@@ -26,11 +26,12 @@ type additionalInfo struct {
 	Type        int8   `db:"type"`
 	Cost        int64  `db:"cost"`
 	CompanyID   *int64 `db:"company_id"`
+	Round       int    `db:"round"`
 }
 
 const additionalInfosQueryCreate = `
-insert into backend.additional_info (name, description, type, cost, company_id)
-values (:name, :description, :type, :cost, :company_id)
+insert into backend.additional_info (name, description, type, cost, company_id, round)
+values (:name, :description, :type, :cost, :company_id, :round)
 returning id
 `
 
@@ -44,12 +45,14 @@ func (r *AdditionalInfosRepo) Create(ctx context.Context, info *models.Additiona
 			Type        int8   `db:"type"`
 			Cost        int64  `db:"cost"`
 			CompanyID   *int64 `db:"company_id"`
+			Round       int    `db:"round"`
 		}{
 			Name:        info.Name,
 			Description: info.Description,
 			Type:        int8(info.Type),
 			Cost:        info.Cost,
 			CompanyID:   info.CompanyID,
+			Round:       info.Round,
 		},
 	)
 	if err != nil {
@@ -75,12 +78,14 @@ set (
     name,
     description,
     cost,
-    company_id
+    company_id,
+    round
 ) = (
     :name,
     :description,
     :cost,
-    :company_id
+    :company_id,
+    :round
 )
 where id = :id
 `
@@ -95,12 +100,14 @@ func (r *AdditionalInfosRepo) Update(ctx context.Context, info *models.Additiona
 			Description string `db:"description"`
 			Cost        int64  `db:"cost"`
 			CompanyID   *int64 `db:"company_id"`
+			Round       int    `db:"round"`
 		}{
 			ID:          info.ID,
 			Name:        info.Name,
 			Description: info.Description,
 			Cost:        info.Cost,
 			CompanyID:   info.CompanyID,
+			Round:       info.Round,
 		},
 	)
 	if err != nil {
@@ -127,7 +134,8 @@ select
     ai.description,
     ai.type,
     ai.company_id,
-    ai.cost
+    ai.cost,
+    ai.round
 from backend.additional_info ai
 left join backend.company c on c.id = ai.company_id
 where ai.type = $1 and (not c.archived or c.archived isnull)
@@ -151,6 +159,7 @@ func (r *AdditionalInfosRepo) GetAllActualWithType(
 				Type:        models.AdditionalInfoType(item.Type),
 				Cost:        item.Cost,
 				CompanyID:   item.CompanyID,
+				Round:       item.Round,
 			}
 		},
 	), nil
@@ -163,7 +172,8 @@ select
     ai.description,
     ai.type,
     ai.company_id,
-    ai.cost
+    ai.cost,
+    ai.round
 from backend.additional_info ai
 where id = $1
 `
@@ -180,6 +190,7 @@ func (r *AdditionalInfosRepo) GetByID(ctx context.Context, id int64) (*models.Ad
 		Type:        models.AdditionalInfoType(info.Type),
 		Cost:        info.Cost,
 		CompanyID:   info.CompanyID,
+		Round:       info.Round,
 	}, nil
 }
 
@@ -190,7 +201,8 @@ select
     ai.description,
     ai.type,
     ai.company_id,
-    ai.cost
+    ai.cost,
+    ai.round
 from backend.additional_info ai
 where id in (?)
 `
@@ -216,7 +228,20 @@ func (r *AdditionalInfosRepo) GetByIDs(ctx context.Context, ids []int64) ([]mode
 				Type:        models.AdditionalInfoType(item.Type),
 				Cost:        item.Cost,
 				CompanyID:   item.CompanyID,
+				Round:       item.Round,
 			}
 		},
 	), nil
+}
+
+const additionalInfosQueryDelete = `
+delete from backend.additional_info
+where id = $1
+`
+
+func (r *AdditionalInfosRepo) Delete(ctx context.Context, id int64) error {
+	if _, err := r.db.ExecContext(ctx, additionalInfosQueryDelete, id); err != nil {
+		return fmt.Errorf("exec error: %w", err)
+	}
+	return nil
 }
