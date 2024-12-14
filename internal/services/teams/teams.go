@@ -560,6 +560,10 @@ func (s *Service) PurchaseAdditionalInfoCompanyInfo(ctx context.Context, teamId 
 		return models.AdditionalInfo{}, 0, fmt.Errorf("s.additionalInfosRepo.GetAllActualWithType: %w", err)
 	}
 
+	additionalInfos = lo.Filter(additionalInfos, func(item models.AdditionalInfo, _ int) bool {
+		return item.Round == game.CurrentRound
+	})
+
 	infosMap := lo.SliceToMap(
 		additionalInfos,
 		func(item models.AdditionalInfo) (int64, models.AdditionalInfo) {
