@@ -130,10 +130,12 @@ func (params PurchaseParams) Validate() error {
 	return nil
 }
 
+var ErrIsNoTradePeriod = errors.New("cannot do purchase because is not trade period")
+
 func (s *Service) Purchase(ctx context.Context, params PurchaseParams) (int64, error) {
 	if !s.isTradePeriod {
 		s.log.Debug().Msg("cannot do purchase because is not trade period")
-		return 0, errors.New("cannot do purchase because is not trade period")
+		return 0, ErrIsNoTradePeriod
 	}
 
 	if err := params.Validate(); err != nil {
@@ -558,7 +560,8 @@ func (s *Service) PurchaseAdditionalInfoCompanyInfo(ctx context.Context, teamId 
 		},
 	)
 	for _, id := range team.AdditionalInfos {
-		if _, ok := infosMap[id]; !ok {
+		_, ok := infosMap[id]
+		if ok {
 			delete(infosMap, id)
 		}
 	}
@@ -568,7 +571,7 @@ func (s *Service) PurchaseAdditionalInfoCompanyInfo(ctx context.Context, teamId 
 
 	infoIds := lo.Keys(infosMap)
 	additionalInfoToBuyID := rand.Intn(len(infoIds))
-	additionalInfoToBuy := infosMap[int64(additionalInfoToBuyID)]
+	additionalInfoToBuy := infosMap[infoIds[additionalInfoToBuyID]]
 
 	if err = s.purchaseAdditionalInfo(
 		ctx,
