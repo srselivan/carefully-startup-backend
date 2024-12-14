@@ -19,10 +19,10 @@ func (r *Router) initSettingsRoutes(router chi.Router) {
 
 type (
 	getSettingsResp struct {
-		RoundsCount        int           `json:"roundsCount"`
-		RoundsDuration     time.Duration `json:"roundsDuration"`
-		LinkToPDF          string        `json:"linkToPdf"`
-		EnableRandomEvents bool          `json:"enableRandomEvents"`
+		RoundsCount        int    `json:"roundsCount"`
+		RoundsDuration     string `json:"roundsDuration"`
+		LinkToPDF          string `json:"linkToPdf"`
+		EnableRandomEvents bool   `json:"enableRandomEvents"`
 	}
 )
 
@@ -38,7 +38,7 @@ func (r *Router) getSettings(resp http.ResponseWriter, req *http.Request) {
 	response, err := jsoniter.Marshal(
 		getSettingsResp{
 			RoundsCount:        settings.RoundsCount,
-			RoundsDuration:     settings.RoundsDuration,
+			RoundsDuration:     settings.RoundsDuration.String(),
 			LinkToPDF:          settings.LinkToPDF,
 			EnableRandomEvents: settings.EnableRandomEvents,
 		},
@@ -57,10 +57,10 @@ func (r *Router) getSettings(resp http.ResponseWriter, req *http.Request) {
 
 type (
 	updateSettingsReq struct {
-		RoundsCount        int           `json:"roundsCount"`
-		RoundsDuration     time.Duration `json:"roundsDuration"`
-		LinkToPDF          string        `json:"linkToPdf"`
-		EnableRandomEvents bool          `json:"enableRandomEvents"`
+		RoundsCount        int    `json:"roundsCount"`
+		RoundsDuration     string `json:"roundsDuration"`
+		LinkToPDF          string `json:"linkToPdf"`
+		EnableRandomEvents bool   `json:"enableRandomEvents"`
 	}
 )
 
@@ -80,12 +80,19 @@ func (r *Router) updateSettings(resp http.ResponseWriter, req *http.Request) {
 		_, _ = resp.Write([]byte(http.StatusText(http.StatusInternalServerError)))
 		return
 	}
+	dur, err := time.ParseDuration(request.RoundsDuration)
+	if err != nil {
+		r.log.Error().Err(err).Msg("json unmarshal error")
+		resp.WriteHeader(http.StatusInternalServerError)
+		_, _ = resp.Write([]byte(http.StatusText(http.StatusInternalServerError)))
+		return
+	}
 
 	if err = r.settingsService.Update(
 		req.Context(),
 		settingsservice.UpdateParams{
 			RoundsCount:        request.RoundsCount,
-			RoundsDuration:     request.RoundsDuration,
+			RoundsDuration:     dur,
 			LinkToPDF:          request.LinkToPDF,
 			EnableRandomEvents: request.EnableRandomEvents,
 		},
