@@ -54,10 +54,12 @@ type CreateParams struct {
 	Credentials string
 }
 
+var ErrNoRegistrationPeriod = errors.New("cannot create team because is not registration period")
+
 func (s *Service) Create(ctx context.Context, params CreateParams) (int64, error) {
 	if !s.isRegistrationPeriod {
 		s.log.Debug().Msg("cannot create team because is not registration period")
-		return 0, errors.New("cannot create team because is not registration period")
+		return 0, ErrNoRegistrationPeriod
 	}
 
 	settings, err := s.settingsRepo.Get(ctx)
@@ -196,6 +198,11 @@ func (s *Service) Purchase(ctx context.Context, params PurchaseParams) (int64, e
 		}
 	}
 
+	if params.SharesChanges != nil {
+		if err = team.Shares.MergeChanges(params.SharesChanges); err != nil {
+			return 0, fmt.Errorf("team.Shares.MergeChanges: %w", err)
+		}
+	}
 	if params.AdditionalInfoID != nil {
 		team.AdditionalInfos = append(team.AdditionalInfos, *params.AdditionalInfoID)
 	}

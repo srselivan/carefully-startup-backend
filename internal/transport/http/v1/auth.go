@@ -48,6 +48,10 @@ func (r *Router) registration(resp http.ResponseWriter, req *http.Request) {
 	})
 	if err != nil {
 		r.log.Error().Err(err).Msg("create team error")
+		if errors.Is(err, teams.ErrNoRegistrationPeriod) {
+			resp.WriteHeader(http.StatusBadRequest)
+			return
+		}
 		resp.WriteHeader(http.StatusInternalServerError)
 		_, _ = resp.Write([]byte(err.Error()))
 		return
