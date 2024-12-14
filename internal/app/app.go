@@ -97,7 +97,14 @@ func Run(cfg *config.Config) {
 	gameController.RegisterNotify(teamsService.NotifyGameRegistrationPeriodUpdated)
 
 	gamesService := games.New(gamesRepo, tradeController, gameController, teamNotifier, log)
-	settingsService := settings.New(settingsRepo, gamesService.UpdateTradePeriod, log)
+	settingsService := settings.New(
+		settingsRepo,
+		gamesService.UpdateTradePeriod,
+		teamsRepo,
+		balancesRepo,
+		gamesRepo,
+		log,
+	)
 
 	router := v1.NewRouter(v1.Config{
 		SecretJWT:             cfg.JWT.JWTAccessSecretKey,

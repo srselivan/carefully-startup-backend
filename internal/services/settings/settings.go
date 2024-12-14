@@ -12,17 +12,26 @@ import (
 type Service struct {
 	repo                      repo.SettingsRepo
 	updateTradePeriodCallback func(time.Duration)
+	teamsRepo                 repo.TeamsRepo
+	gameRepo                  repo.GamesRepo
+	balanceRepo               repo.BalancesRepo
 	log                       *zerolog.Logger
 }
 
 func New(
 	repo repo.SettingsRepo,
 	updateTradePeriodCallback func(time.Duration),
+	teamsRepo repo.TeamsRepo,
+	balanceRepo repo.BalancesRepo,
+	gameRepo repo.GamesRepo,
 	log *zerolog.Logger,
 ) *Service {
 	return &Service{
 		repo:                      repo,
+		balanceRepo:               balanceRepo,
+		teamsRepo:                 teamsRepo,
 		updateTradePeriodCallback: updateTradePeriodCallback,
+		gameRepo:                  gameRepo,
 		log:                       log,
 	}
 }
@@ -40,6 +49,7 @@ type UpdateParams struct {
 	RoundsDuration     time.Duration
 	LinkToPDF          string
 	EnableRandomEvents bool
+	DefaultBalance     int64
 }
 
 func (s *Service) Update(ctx context.Context, params UpdateParams) error {
@@ -56,8 +66,43 @@ func (s *Service) Update(ctx context.Context, params UpdateParams) error {
 	settings.EnableRandomEvents = params.EnableRandomEvents
 	settings.LinkToPDF = params.LinkToPDF
 
+	if settings.DefaultBalanceAmount != params.DefaultBalance {
+		if err = s.updateDefaultBalanceForActiveTeams(ctx, params.DefaultBalance); err != nil {
+			return fmt.Errorf("s.updateDefaultBalanceForActiveTeams: %w", err)
+		}
+	}
+	settings.DefaultBalanceAmount = params.DefaultBalance
+
 	if err = s.repo.Update(ctx, settings); err != nil {
 		return fmt.Errorf("s.repo.Update: %w", err)
+	}
+	return nil
+}
+
+func (s *Service) updateDefaultBalanceForActiveTeams(ctx context.Context, defaultBalance int64) error {
+	game, err := s.gameRepo.Get(ctx)
+	if err != nil {
+		return fmt.Errorf("s.gameRepo.Get: %w", err)
+	}
+	if game.State == models.GameStateStarted {
+		return nil
+	}
+
+	teams, err := s.teamsRepo.GetAllByGameID(ctx, game.CurrentGame)
+	if err != nil {
+		return fmt.Errorf("s.teamsRepo.GetAllByGameID: %w", err)
+	}
+	if len(teams) == 0 {
+		return nil
+	}
+
+	for _, team := range teams {
+		if err = s.balanceRepo.Update(ctx, &models.Balance{
+			ID:     team.BalanceID,
+			Amount: defaultBalance,
+		}); err != nil {
+			return fmt.Errorf("s.balanceRepo.Update: %w", err)
+		}
 	}
 	return nil
 }

@@ -23,6 +23,7 @@ type (
 		RoundsDuration     string `json:"roundsDuration"`
 		LinkToPDF          string `json:"linkToPdf"`
 		EnableRandomEvents bool   `json:"enableRandomEvents"`
+		DefaultBalance     int64  `json:"defaultBalance"`
 	}
 )
 
@@ -41,6 +42,7 @@ func (r *Router) getSettings(resp http.ResponseWriter, req *http.Request) {
 			RoundsDuration:     settings.RoundsDuration.String(),
 			LinkToPDF:          settings.LinkToPDF,
 			EnableRandomEvents: settings.EnableRandomEvents,
+			DefaultBalance:     settings.DefaultBalanceAmount,
 		},
 	)
 	if err != nil {
@@ -61,6 +63,7 @@ type (
 		RoundsDuration     string `json:"roundsDuration"`
 		LinkToPDF          string `json:"linkToPdf"`
 		EnableRandomEvents bool   `json:"enableRandomEvents"`
+		DefaultBalance     int64  `json:"defaultBalance"`
 	}
 )
 
@@ -95,6 +98,7 @@ func (r *Router) updateSettings(resp http.ResponseWriter, req *http.Request) {
 			RoundsDuration:     dur,
 			LinkToPDF:          request.LinkToPDF,
 			EnableRandomEvents: request.EnableRandomEvents,
+			DefaultBalance:     request.DefaultBalance,
 		},
 	); err != nil {
 		r.log.Error().Err(err).Msg("settings service: update error")
