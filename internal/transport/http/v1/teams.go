@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"errors"
 	"github.com/go-chi/chi/v5"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/samber/lo"
@@ -75,6 +76,16 @@ type (
 	teamPurchaseResp struct {
 		BalanceAmount int64 `json:"balanceAmount"`
 	}
+	purchaseError struct {
+		Code    int    `json:"code"`
+		Message string `json:"message"`
+	}
+)
+
+const (
+	errIsNoTradePeriod        = 10001
+	errIncorrectCountOfShares = 10002
+	errInsufficientBalance    = 10003
 )
 
 func (r *Router) teamPurchase(resp http.ResponseWriter, req *http.Request) {
@@ -104,6 +115,57 @@ func (r *Router) teamPurchase(resp http.ResponseWriter, req *http.Request) {
 	)
 	if err != nil {
 		r.log.Error().Err(err).Msg("purchase error")
+		if errors.Is(err, teams.ErrIsNoTradePeriod) {
+			response, err := jsoniter.Marshal(
+				purchaseError{
+					Code:    errIsNoTradePeriod,
+					Message: err.Error(),
+				},
+			)
+			if err != nil {
+				r.log.Error().Err(err).Msg("marshal to json error")
+				resp.WriteHeader(http.StatusInternalServerError)
+				_, _ = resp.Write([]byte(http.StatusText(http.StatusInternalServerError)))
+				return
+			}
+			resp.WriteHeader(http.StatusBadRequest)
+			_, _ = resp.Write(response)
+			return
+		}
+		if errors.Is(err, teams.ErrIncorrectCountOfShares) {
+			response, err := jsoniter.Marshal(
+				purchaseError{
+					Code:    errIncorrectCountOfShares,
+					Message: err.Error(),
+				},
+			)
+			if err != nil {
+				r.log.Error().Err(err).Msg("marshal to json error")
+				resp.WriteHeader(http.StatusInternalServerError)
+				_, _ = resp.Write([]byte(http.StatusText(http.StatusInternalServerError)))
+				return
+			}
+			resp.WriteHeader(http.StatusBadRequest)
+			_, _ = resp.Write(response)
+			return
+		}
+		if errors.Is(err, teams.ErrNoMoneyForOperation) {
+			response, err := jsoniter.Marshal(
+				purchaseError{
+					Code:    errInsufficientBalance,
+					Message: err.Error(),
+				},
+			)
+			if err != nil {
+				r.log.Error().Err(err).Msg("marshal to json error")
+				resp.WriteHeader(http.StatusInternalServerError)
+				_, _ = resp.Write([]byte(http.StatusText(http.StatusInternalServerError)))
+				return
+			}
+			resp.WriteHeader(http.StatusBadRequest)
+			_, _ = resp.Write(response)
+			return
+		}
 		resp.WriteHeader(http.StatusInternalServerError)
 		_, _ = resp.Write([]byte(err.Error()))
 		return

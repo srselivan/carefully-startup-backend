@@ -130,7 +130,11 @@ func (params PurchaseParams) Validate() error {
 	return nil
 }
 
-var ErrIsNoTradePeriod = errors.New("cannot do purchase because is not trade period")
+var (
+	ErrIsNoTradePeriod        = errors.New("cannot do purchase because is not trade period")
+	ErrIncorrectCountOfShares = errors.New("incorrect count of shares")
+	ErrNoMoneyForOperation    = errors.New("insufficient balance to complete the transaction")
+)
 
 func (s *Service) Purchase(ctx context.Context, params PurchaseParams) (int64, error) {
 	if !s.isTradePeriod {
@@ -160,6 +164,9 @@ func (s *Service) Purchase(ctx context.Context, params PurchaseParams) (int64, e
 			team.Shares = make(models.TeamSharesState)
 		}
 		if err = team.Shares.MergeChanges(params.SharesChanges); err != nil {
+			if errors.Is(err, models.ErrSharesCountCannotBeNegative) {
+				return 0, ErrIncorrectCountOfShares
+			}
 			return 0, fmt.Errorf("team.Shares.MergeChanges: %w", err)
 		}
 	}
@@ -265,7 +272,7 @@ type purchaseAdditionalInfo struct {
 
 func (s *Service) purchaseAdditionalInfo(ctx context.Context, params purchaseAdditionalInfo) error {
 	if params.balance.Amount-params.amount < 0 {
-		return errors.New("insufficient balance to complete the transaction")
+		return ErrNoMoneyForOperation
 	}
 
 	_, err := s.balanceTransactionsRepo.Create(
@@ -307,7 +314,7 @@ func (s *Service) purchaseShares(ctx context.Context, params purchaseSharesParam
 
 	if errors.Is(err, repo.ErrNotFound) {
 		if params.balance.Amount-params.amount < 0 {
-			return errors.New("insufficient balance to complete the transaction")
+			return ErrNoMoneyForOperation
 		}
 
 		if err = s.createNewBalanceTransaction(
@@ -326,7 +333,7 @@ func (s *Service) purchaseShares(ctx context.Context, params purchaseSharesParam
 	} else {
 		balanceAfterTransactionUpdate := params.balance.Amount + transaction.Amount - params.amount
 		if balanceAfterTransactionUpdate < 0 {
-			return errors.New("insufficient balance to complete the transaction")
+			return ErrNoMoneyForOperation
 		}
 
 		for key, value := range transaction.Details {
