@@ -426,9 +426,10 @@ func (s *Service) GetListForGame(ctx context.Context) ([]models.Team, error) {
 }
 
 type DetailedTeam struct {
-	Team            *models.Team
-	AdditionalInfos []models.AdditionalInfo
-	Balance         int64
+	Team                      *models.Team
+	AdditionalInfos           []models.AdditionalInfo
+	Balance                   int64
+	HasTransactionInThisRound bool
 }
 
 func (s *Service) GetDetailedByID(ctx context.Context, id int64) (DetailedTeam, error) {
@@ -446,11 +447,26 @@ func (s *Service) GetDetailedByID(ctx context.Context, id int64) (DetailedTeam, 
 		return DetailedTeam{}, fmt.Errorf("s.fillTeamSharesByZeroValuesIfNeeded: %w", err)
 	}
 
+	game, err := s.gamesRepo.Get(ctx)
+	if err != nil {
+		return DetailedTeam{}, fmt.Errorf("s.gamesRepo.Get: %w", err)
+	}
+
+	var hasTransactionInThisRound bool
+	_, err = s.balanceTransactionsRepo.Get(ctx, team.BalanceID, game.CurrentRound)
+	if err != nil && !errors.Is(err, repo.ErrNotFound) {
+		return DetailedTeam{}, fmt.Errorf("s.balanceTransactionsRepo.Get: %w", err)
+	}
+	if err == nil {
+		hasTransactionInThisRound = true
+	}
+
 	if len(team.AdditionalInfos) == 0 {
 		return DetailedTeam{
-			Team:            team,
-			AdditionalInfos: nil,
-			Balance:         balance.Amount,
+			Team:                      team,
+			AdditionalInfos:           nil,
+			Balance:                   balance.Amount,
+			HasTransactionInThisRound: hasTransactionInThisRound,
 		}, nil
 	}
 
@@ -460,9 +476,10 @@ func (s *Service) GetDetailedByID(ctx context.Context, id int64) (DetailedTeam, 
 	}
 
 	return DetailedTeam{
-		Team:            team,
-		AdditionalInfos: additionalInfos,
-		Balance:         balance.Amount,
+		Team:                      team,
+		AdditionalInfos:           additionalInfos,
+		Balance:                   balance.Amount,
+		HasTransactionInThisRound: hasTransactionInThisRound,
 	}, nil
 }
 

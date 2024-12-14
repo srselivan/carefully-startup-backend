@@ -127,14 +127,15 @@ func (r *Router) teamPurchase(resp http.ResponseWriter, req *http.Request) {
 
 type (
 	getTeamByIDResp struct {
-		TeamID            int64                           `json:"id"`
-		Name              string                          `json:"name"`
-		Members           []string                        `json:"members"`
-		Shares            map[int64]int64                 `json:"shares"`
-		AdditionalInfoIds []int64                         `json:"additionalInfoIds"`
-		RandomEventID     *int64                          `json:"randomEventId"`
-		AdditionalInfos   []getTeamByIDRespAdditionalInfo `json:"additionalInfos"`
-		BalanceAmount     int64                           `json:"balanceAmount"`
+		TeamID                    int64                           `json:"id"`
+		Name                      string                          `json:"name"`
+		Members                   []string                        `json:"members"`
+		Shares                    map[int64]int64                 `json:"shares"`
+		AdditionalInfoIds         []int64                         `json:"additionalInfoIds"`
+		RandomEventID             *int64                          `json:"randomEventId"`
+		AdditionalInfos           []getTeamByIDRespAdditionalInfo `json:"additionalInfos"`
+		BalanceAmount             int64                           `json:"balanceAmount"`
+		HasTransactionInThisRound bool                            `json:"hasTransactionInThisRound"`
 	}
 	getTeamByIDRespAdditionalInfo struct {
 		ID          int64  `json:"id"`
@@ -185,7 +186,8 @@ func (r *Router) getTeamByID(resp http.ResponseWriter, req *http.Request) {
 					}
 				},
 			),
-			BalanceAmount: detailedTeam.Balance,
+			BalanceAmount:             detailedTeam.Balance,
+			HasTransactionInThisRound: detailedTeam.HasTransactionInThisRound,
 		},
 	)
 	if err != nil {
