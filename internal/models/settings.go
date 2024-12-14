@@ -5,9 +5,10 @@ import "time"
 const DefaultRoundsCount = 3
 
 type Settings struct {
-	RoundsCount          int
-	RoundsDuration       time.Duration
-	LinkToPDF            string
-	EnableRandomEvents   bool
-	DefaultBalanceAmount int64
+	RoundsCount               int
+	RoundsDuration            time.Duration
+	LinkToPDF                 string
+	EnableRandomEvents        bool
+	DefaultBalanceAmount      int64
+	DefaultAdditionalInfoCost int64
 }

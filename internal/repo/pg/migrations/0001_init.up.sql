@@ -1,15 +1,16 @@
 create table if not exists backend.settings
 (
-    id                     serial primary key,
-    rounds_count           integer not null check (rounds_count >= 3),
-    rounds_duration        bigint  not null,
-    link_to_pdf            text,
-    enable_random_events   boolean,
-    default_balance_amount bigint  not null
+    id                           serial primary key,
+    rounds_count                 integer not null check (rounds_count >= 3),
+    rounds_duration              bigint  not null,
+    link_to_pdf                  text,
+    enable_random_events         boolean,
+    default_balance_amount       bigint  not null,
+    default_additional_info_cost bigint  not null
 );
 
-insert into backend.settings (rounds_count, rounds_duration, link_to_pdf, enable_random_events, default_balance_amount)
-values (3, 600000000000, 'http://hui/pizda', false, 1000);
+insert into backend.settings (rounds_count, rounds_duration, link_to_pdf, enable_random_events, default_balance_amount, default_additional_info_cost)
+values (3, 600000000000, 'https://google.com', false, 1000, 100);
 
 create table if not exists backend.game
 (
@@ -17,10 +18,11 @@ create table if not exists backend.game
     state         smallint not null,
     current_round integer,
     trade_state   smallint not null,
-    current_game  bigint not null
+    current_game  bigint   not null
 );
 
-insert into backend.game (state, current_round, trade_state, current_game) values (3, 0, 0, 1);
+insert into backend.game (state, current_round, trade_state, current_game)
+values (3, 0, 0, 1);
 
 create table if not exists backend.company
 (

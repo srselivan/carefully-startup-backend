@@ -19,11 +19,12 @@ func (r *Router) initSettingsRoutes(router chi.Router) {
 
 type (
 	getSettingsResp struct {
-		RoundsCount        int    `json:"roundsCount"`
-		RoundsDuration     string `json:"roundsDuration"`
-		LinkToPDF          string `json:"linkToPdf"`
-		EnableRandomEvents bool   `json:"enableRandomEvents"`
-		DefaultBalance     int64  `json:"defaultBalance"`
+		RoundsCount               int    `json:"roundsCount"`
+		RoundsDuration            string `json:"roundsDuration"`
+		LinkToPDF                 string `json:"linkToPdf"`
+		EnableRandomEvents        bool   `json:"enableRandomEvents"`
+		DefaultBalance            int64  `json:"defaultBalance"`
+		DefaultAdditionalInfoCost int64  `json:"defaultAdditionalInfoCost"`
 	}
 )
 
@@ -38,11 +39,12 @@ func (r *Router) getSettings(resp http.ResponseWriter, req *http.Request) {
 
 	response, err := jsoniter.Marshal(
 		getSettingsResp{
-			RoundsCount:        settings.RoundsCount,
-			RoundsDuration:     settings.RoundsDuration.String(),
-			LinkToPDF:          settings.LinkToPDF,
-			EnableRandomEvents: settings.EnableRandomEvents,
-			DefaultBalance:     settings.DefaultBalanceAmount,
+			RoundsCount:               settings.RoundsCount,
+			RoundsDuration:            settings.RoundsDuration.String(),
+			LinkToPDF:                 settings.LinkToPDF,
+			EnableRandomEvents:        settings.EnableRandomEvents,
+			DefaultBalance:            settings.DefaultBalanceAmount,
+			DefaultAdditionalInfoCost: settings.DefaultAdditionalInfoCost,
 		},
 	)
 	if err != nil {
@@ -59,11 +61,12 @@ func (r *Router) getSettings(resp http.ResponseWriter, req *http.Request) {
 
 type (
 	updateSettingsReq struct {
-		RoundsCount        int    `json:"roundsCount"`
-		RoundsDuration     string `json:"roundsDuration"`
-		LinkToPDF          string `json:"linkToPdf"`
-		EnableRandomEvents bool   `json:"enableRandomEvents"`
-		DefaultBalance     int64  `json:"defaultBalance"`
+		RoundsCount               int    `json:"roundsCount"`
+		RoundsDuration            string `json:"roundsDuration"`
+		LinkToPDF                 string `json:"linkToPdf"`
+		EnableRandomEvents        bool   `json:"enableRandomEvents"`
+		DefaultBalance            int64  `json:"defaultBalance"`
+		DefaultAdditionalInfoCost int64  `json:"defaultAdditionalInfoCost"`
 	}
 )
 
@@ -94,11 +97,12 @@ func (r *Router) updateSettings(resp http.ResponseWriter, req *http.Request) {
 	if err = r.settingsService.Update(
 		req.Context(),
 		settingsservice.UpdateParams{
-			RoundsCount:        request.RoundsCount,
-			RoundsDuration:     dur,
-			LinkToPDF:          request.LinkToPDF,
-			EnableRandomEvents: request.EnableRandomEvents,
-			DefaultBalance:     request.DefaultBalance,
+			RoundsCount:               request.RoundsCount,
+			RoundsDuration:            dur,
+			LinkToPDF:                 request.LinkToPDF,
+			EnableRandomEvents:        request.EnableRandomEvents,
+			DefaultBalance:            request.DefaultBalance,
+			DefaultAdditionalInfoCost: request.DefaultAdditionalInfoCost,
 		},
 	); err != nil {
 		r.log.Error().Err(err).Msg("settings service: update error")
