@@ -19,6 +19,7 @@ type Service struct {
 	additionalInfosRepo     repo.AdditionalInfosRepo
 	sharesRepo              repo.CompanySharesRepo
 	gamesRepo               repo.GamesRepo
+	companiesRepo           repo.CompaniesRepo
 	log                     *zerolog.Logger
 	isTradePeriod           bool
 	isRegistrationPeriod    bool
@@ -32,6 +33,7 @@ func New(
 	sharesRepo repo.CompanySharesRepo,
 	balanceTransactionsRepo repo.BalanceTransactionsRepo,
 	gamesRepo repo.GamesRepo,
+	companiesRepo repo.CompaniesRepo,
 	log *zerolog.Logger,
 ) *Service {
 	return &Service{
@@ -42,6 +44,7 @@ func New(
 		sharesRepo:              sharesRepo,
 		balanceTransactionsRepo: balanceTransactionsRepo,
 		gamesRepo:               gamesRepo,
+		companiesRepo:           companiesRepo,
 		log:                     log,
 	}
 }
@@ -420,6 +423,10 @@ func (s *Service) GetDetailedByID(ctx context.Context, id int64) (DetailedTeam, 
 		return DetailedTeam{}, fmt.Errorf("s.balancesRepo.GetByID: %w", err)
 	}
 
+	if err = s.fillTeamSharesByZeroValuesIfNeeded(ctx, team); err != nil {
+		return DetailedTeam{}, fmt.Errorf("s.fillTeamSharesByZeroValuesIfNeeded: %w", err)
+	}
+
 	if len(team.AdditionalInfos) == 0 {
 		return DetailedTeam{
 			Team:            team,
@@ -438,6 +445,28 @@ func (s *Service) GetDetailedByID(ctx context.Context, id int64) (DetailedTeam, 
 		AdditionalInfos: additionalInfos,
 		Balance:         balance.Amount,
 	}, nil
+}
+
+func (s *Service) fillTeamSharesByZeroValuesIfNeeded(ctx context.Context, team *models.Team) error {
+	companies, err := s.companiesRepo.GetAllNotArchived(ctx)
+	if err != nil {
+		return fmt.Errorf("s.companiesRepo.GetAllNotArchived: %w", err)
+	}
+
+	if len(team.Shares) == len(companies) {
+		return nil
+	}
+
+	if team.Shares == nil {
+		team.Shares = make(models.TeamSharesState)
+	}
+
+	sharesWithZeroValues := make(models.TeamSharesState)
+	for _, company := range companies {
+		sharesWithZeroValues[company.ID] = team.Shares[company.ID]
+	}
+	team.Shares = sharesWithZeroValues
+	return nil
 }
 
 func (s *Service) NotifyTradePeriodUpdated(isTrade bool) {

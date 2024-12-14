@@ -79,6 +79,7 @@ func Run(cfg *config.Config) {
 		companySharesRepo,
 		balanceTransactionsRepo,
 		gamesRepo,
+		companiesRepo,
 		log,
 	)
 	additionalInfosService := additionalinfos.New(additionalInfosRepo, log)
