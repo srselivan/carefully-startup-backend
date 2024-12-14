@@ -588,3 +588,47 @@ func (s *Service) PurchaseAdditionalInfoCompanyInfo(ctx context.Context, teamId 
 
 	return models.AdditionalInfo{}, balance.Amount, nil
 }
+
+func (s *Service) ResetTransaction(ctx context.Context, teamID int64) (DetailedTeam, error) {
+	game, err := s.gamesRepo.Get(ctx)
+	if err != nil {
+		return DetailedTeam{}, fmt.Errorf("s.gamesRepo.Get: %w", err)
+	}
+	team, err := s.teamsRepo.GetByID(ctx, teamID)
+	if err != nil {
+		return DetailedTeam{}, fmt.Errorf("s.teamsRepo.GetByID: %w", err)
+	}
+	balance, err := s.balancesRepo.GetByID(ctx, team.BalanceID)
+	if err != nil {
+		return DetailedTeam{}, fmt.Errorf("s.balancesRepo.GetByID: %w", err)
+	}
+
+	transaction, err := s.balanceTransactionsRepo.Get(ctx, balance.ID, game.CurrentRound)
+	if err != nil {
+		return DetailedTeam{}, fmt.Errorf("s.balanceTransactionsRepo.Get: %w", err)
+	}
+	balance.Amount = balance.Amount + transaction.Amount
+	if err = s.balancesRepo.Update(ctx, balance); err != nil {
+		return DetailedTeam{}, fmt.Errorf("s.balancesRepo.Update: %w", err)
+	}
+
+	for key, value := range transaction.Details {
+		transaction.Details[key] = -value
+	}
+	if err = team.Shares.MergeChanges(transaction.Details); err != nil {
+		return DetailedTeam{}, fmt.Errorf("params.team.Shares.MergeChanges: %w", err)
+	}
+
+	if err = s.teamsRepo.Update(ctx, team); err != nil {
+		return DetailedTeam{}, fmt.Errorf("s.teamsRepo.Update: %w", err)
+	}
+	if err = s.balanceTransactionsRepo.Delete(ctx, balance.ID, game.CurrentRound); err != nil {
+		return DetailedTeam{}, fmt.Errorf("s.balanceTransactionsRepo.Delete: %w", err)
+	}
+
+	detailedTeam, err := s.GetDetailedByID(ctx, teamID)
+	if err != nil {
+		return DetailedTeam{}, fmt.Errorf("s.GetDetailedByID: %w", err)
+	}
+	return detailedTeam, nil
+}

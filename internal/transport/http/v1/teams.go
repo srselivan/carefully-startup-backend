@@ -16,6 +16,7 @@ func (r *Router) initTeamsRoutes(router chi.Router) {
 		subRouter.Use(r.AuthMiddleware)
 		subRouter.Patch("/", r.updateTeam)
 		subRouter.Post("/purchase", r.teamPurchase)
+		subRouter.Post("/{team_id}/purchase/reset", r.teamPurchaseReset)
 		subRouter.Post("/purchase/additional-info/{team_id}", r.teamPurchaseAdditionalInfo)
 		subRouter.Get("/{team_id}", r.getTeamByID)
 		subRouter.Get("/", r.getAllTeams)
@@ -160,6 +161,61 @@ func (r *Router) getTeamByID(resp http.ResponseWriter, req *http.Request) {
 	detailedTeam, err := r.teamService.GetDetailedByID(req.Context(), int64(teamID))
 	if err != nil {
 		r.log.Error().Err(err).Msg("get by id error")
+		resp.WriteHeader(http.StatusInternalServerError)
+		_, _ = resp.Write([]byte(http.StatusText(http.StatusInternalServerError)))
+		return
+	}
+
+	response, err := jsoniter.Marshal(
+		getTeamByIDResp{
+			TeamID:            detailedTeam.Team.ID,
+			Name:              detailedTeam.Team.Name,
+			Members:           detailedTeam.Team.Members,
+			Shares:            detailedTeam.Team.Shares,
+			AdditionalInfoIds: detailedTeam.Team.AdditionalInfos,
+			RandomEventID:     detailedTeam.Team.RandomEventID,
+			AdditionalInfos: lo.Map(
+				detailedTeam.AdditionalInfos,
+				func(item models.AdditionalInfo, _ int) getTeamByIDRespAdditionalInfo {
+					return getTeamByIDRespAdditionalInfo{
+						ID:          item.ID,
+						Name:        item.Name,
+						Description: item.Description,
+						Type:        int(item.Type),
+						Cost:        item.Cost,
+						CompanyID:   item.CompanyID,
+					}
+				},
+			),
+			BalanceAmount:             detailedTeam.Balance,
+			HasTransactionInThisRound: detailedTeam.HasTransactionInThisRound,
+		},
+	)
+	if err != nil {
+		r.log.Error().Err(err).Msg("marshal to json error")
+		resp.WriteHeader(http.StatusInternalServerError)
+		_, _ = resp.Write([]byte(http.StatusText(http.StatusInternalServerError)))
+		return
+	}
+
+	resp.WriteHeader(http.StatusOK)
+	_, _ = resp.Write(response)
+	return
+}
+
+func (r *Router) teamPurchaseReset(resp http.ResponseWriter, req *http.Request) {
+	teamIDParam := chi.URLParam(req, "team_id")
+	teamID, err := strconv.Atoi(teamIDParam)
+	if err != nil {
+		r.log.Error().Err(err).Msg("get path param")
+		resp.WriteHeader(http.StatusInternalServerError)
+		_, _ = resp.Write([]byte(http.StatusText(http.StatusInternalServerError)))
+		return
+	}
+
+	detailedTeam, err := r.teamService.ResetTransaction(req.Context(), int64(teamID))
+	if err != nil {
+		r.log.Error().Err(err).Msg("reset transaction error")
 		resp.WriteHeader(http.StatusInternalServerError)
 		_, _ = resp.Write([]byte(http.StatusText(http.StatusInternalServerError)))
 		return

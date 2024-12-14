@@ -126,6 +126,22 @@ func (r *BalanceTransactionsRepo) Update(ctx context.Context, tr *models.Balance
 	return nil
 }
 
+const balanceTransactionsQueryDelete = `
+delete from backend.balance_transaction
+where balance_id = $1 and round = $2 and (additional_info_id isnull and random_event_id isnull)
+`
+
+func (r *BalanceTransactionsRepo) Delete(
+	ctx context.Context,
+	balanceID int64,
+	round int,
+) error {
+	if _, err := r.db.ExecContext(ctx, balanceTransactionsQueryDelete, balanceID, round); err != nil {
+		return fmt.Errorf("exec error: %w", err)
+	}
+	return nil
+}
+
 const balanceTransactionsQueryGet = `
 select
     id, 

@@ -57,6 +57,7 @@ type TeamsRepo interface {
 type BalanceTransactionsRepo interface {
 	Create(ctx context.Context, tr *models.BalanceTransaction) (int64, error)
 	Update(ctx context.Context, tr *models.BalanceTransaction) error
+	Delete(ctx context.Context, balanceID int64, round int) error
 	Get(ctx context.Context, balanceID int64, round int) (*models.BalanceTransaction, error)
 }
 
