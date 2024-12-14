@@ -199,6 +199,9 @@ func (s *Service) Purchase(ctx context.Context, params PurchaseParams) (int64, e
 	}
 
 	if params.SharesChanges != nil {
+		if team.Shares == nil {
+			team.Shares = make(models.TeamSharesState)
+		}
 		if err = team.Shares.MergeChanges(params.SharesChanges); err != nil {
 			return 0, fmt.Errorf("team.Shares.MergeChanges: %w", err)
 		}
