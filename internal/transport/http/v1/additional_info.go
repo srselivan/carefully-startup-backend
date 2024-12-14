@@ -17,6 +17,7 @@ func (r *Router) initAdditionalInfosRoutes(router chi.Router) {
 		subRouter.Post("/", r.createAdditionalInfo)
 		subRouter.Put("/{additional_info_id}", r.updateAdditionalInfo)
 		subRouter.Get("/", r.getAllActualAdditionalInfos)
+		subRouter.Delete("/{additional_info_id}", r.deleteAdditionalInfo)
 	})
 }
 
@@ -222,5 +223,26 @@ func (r *Router) getAllActualAdditionalInfos(resp http.ResponseWriter, req *http
 
 	resp.WriteHeader(http.StatusOK)
 	_, _ = resp.Write(response)
+	return
+}
+
+func (r *Router) deleteAdditionalInfo(resp http.ResponseWriter, req *http.Request) {
+	additionalInfoIDParam := chi.URLParam(req, "additional_info_id")
+	additionalInfoID, err := strconv.Atoi(additionalInfoIDParam)
+	if err != nil {
+		r.log.Error().Err(err).Msg("get path param")
+		resp.WriteHeader(http.StatusInternalServerError)
+		_, _ = resp.Write([]byte(http.StatusText(http.StatusInternalServerError)))
+		return
+	}
+
+	if err = r.additionalInfoService.Delete(req.Context(), int64(additionalInfoID)); err != nil {
+		r.log.Error().Err(err).Msg("Delete error")
+		resp.WriteHeader(http.StatusInternalServerError)
+		_, _ = resp.Write([]byte(err.Error()))
+		return
+	}
+
+	resp.WriteHeader(http.StatusOK)
 	return
 }
