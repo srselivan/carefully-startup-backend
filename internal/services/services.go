@@ -51,7 +51,7 @@ type Teams interface {
 }
 
 type Auth interface {
-	Login(ctx context.Context, credentials string) (models.JWTPair, error)
+	Login(ctx context.Context, credentials string, isAdmin bool) (models.JWTPair, error)
 	Refresh(ctx context.Context, refreshToken string) (models.JWTPair, error)
 	RefreshTokenExpTime() time.Duration
 }

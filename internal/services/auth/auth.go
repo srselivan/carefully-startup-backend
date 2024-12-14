@@ -40,7 +40,13 @@ func New(
 	}
 }
 
-func (s *Service) Login(ctx context.Context, credentials string) (models.JWTPair, error) {
+func (s *Service) Login(ctx context.Context, credentials string, isAdmin bool) (models.JWTPair, error) {
+	if isAdmin {
+		if s.adminCredentials != credentials {
+			return models.JWTPair{}, errors.New("unsuccessful login")
+		}
+	}
+
 	game, err := s.gamesRepo.Get(ctx)
 	if err != nil {
 		return models.JWTPair{}, fmt.Errorf("failed to get game: %w", err)

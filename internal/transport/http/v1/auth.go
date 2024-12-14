@@ -65,6 +65,7 @@ type (
 	loginReq struct {
 		TeamName string `json:"teamName"`
 		Password string `json:"password"`
+		IsAdmin  bool   `json:"isAdmin"`
 	}
 	loginResp struct {
 		AccessToken  string `json:"accessToken"`
@@ -89,7 +90,7 @@ func (r *Router) login(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	jwtPair, err := r.authService.Login(req.Context(), request.TeamName+":"+request.Password)
+	jwtPair, err := r.authService.Login(req.Context(), request.TeamName+":"+request.Password, request.IsAdmin)
 	if err != nil {
 		r.log.Error().Err(err).Msg("login error")
 		resp.WriteHeader(http.StatusUnauthorized)
