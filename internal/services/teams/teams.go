@@ -192,6 +192,7 @@ func (s *Service) Purchase(ctx context.Context, params PurchaseParams) (int64, e
 				balance:       balance,
 				sharesChanges: params.SharesChanges,
 				amount:        purchaseAmount,
+				team:          team,
 			},
 		); err != nil {
 			return 0, fmt.Errorf("s.purchaseShares: %w", err)
@@ -292,6 +293,7 @@ type purchaseSharesParams struct {
 	balance       *models.Balance
 	sharesChanges map[int64]int64
 	amount        int64
+	team          *models.Team
 }
 
 func (s *Service) purchaseShares(ctx context.Context, params purchaseSharesParams) error {
@@ -322,6 +324,13 @@ func (s *Service) purchaseShares(ctx context.Context, params purchaseSharesParam
 		balanceAfterTransactionUpdate := params.balance.Amount + transaction.Amount - params.amount
 		if balanceAfterTransactionUpdate < 0 {
 			return errors.New("insufficient balance to complete the transaction")
+		}
+
+		for key, value := range transaction.Details {
+			transaction.Details[key] = -value
+		}
+		if err = params.team.Shares.MergeChanges(transaction.Details); err != nil {
+			return fmt.Errorf("params.team.Shares.MergeChanges: %w", err)
 		}
 
 		if err = s.updateExistedBalanceTransaction(
