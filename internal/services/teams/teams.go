@@ -221,7 +221,7 @@ func (s *Service) getPurchaseAmount(ctx context.Context, params getPurchaseAmoun
 	companyIDs := lo.Keys(params.sharesChanges)
 	shares, err := s.sharesRepo.GetListByCompanyIDsAndRound(ctx, companyIDs, params.round)
 	if err != nil {
-		return 0, fmt.Errorf("s.sharesRepo.GetListByIDs: %w", err)
+		return 0, fmt.Errorf("s.sharesRepo.GetListByCompanyIDsAndRound: %w", err)
 	}
 	priceByCompanyID := lo.SliceToMap(
 		shares,

@@ -53,7 +53,7 @@ where id = $2
 `
 
 func (r *BalancesRepo) Update(ctx context.Context, balance *models.Balance) error {
-	if _, err := r.db.ExecContext(ctx, balancesQueryUpdate, balance.Amount); err != nil {
+	if _, err := r.db.ExecContext(ctx, balancesQueryUpdate, balance.Amount, balance.ID); err != nil {
 		return fmt.Errorf("query error: %w", err)
 	}
 	return nil
