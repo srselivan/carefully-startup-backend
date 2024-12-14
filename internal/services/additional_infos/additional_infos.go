@@ -9,17 +9,20 @@ import (
 )
 
 type Service struct {
-	repo repo.AdditionalInfosRepo
-	log  *zerolog.Logger
+	repo         repo.AdditionalInfosRepo
+	settingsRepo repo.SettingsRepo
+	log          *zerolog.Logger
 }
 
 func New(
 	repo repo.AdditionalInfosRepo,
+	settingsRepo repo.SettingsRepo,
 	log *zerolog.Logger,
 ) *Service {
 	return &Service{
-		repo: repo,
-		log:  log,
+		repo:         repo,
+		settingsRepo: settingsRepo,
+		log:          log,
 	}
 }
 
@@ -33,11 +36,15 @@ type CreateParams struct {
 }
 
 func (s *Service) Create(ctx context.Context, params CreateParams) (*models.AdditionalInfo, error) {
+	settings, err := s.settingsRepo.Get(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("s.settingsRepo.Get: %v", err)
+	}
 	info := &models.AdditionalInfo{
 		Name:        params.Name,
 		Description: params.Description,
 		Type:        params.Type,
-		Cost:        params.Cost,
+		Cost:        settings.DefaultAdditionalInfoCost,
 		CompanyID:   params.CompanyID,
 		Round:       params.Round,
 	}

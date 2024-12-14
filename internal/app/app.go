@@ -82,7 +82,7 @@ func Run(cfg *config.Config) {
 		companiesRepo,
 		log,
 	)
-	additionalInfosService := additionalinfos.New(additionalInfosRepo, log)
+	additionalInfosService := additionalinfos.New(additionalInfosRepo, settingsRepo, log)
 	teamNotifier := games.NewTeamsNotifier(log)
 
 	settingTmp, err := settingsRepo.Get(context.Background())
