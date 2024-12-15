@@ -25,6 +25,7 @@ func New(
 	teamsRepo repo.TeamsRepo,
 	balanceRepo repo.BalancesRepo,
 	gameRepo repo.GamesRepo,
+	additionalInfoRepo repo.AdditionalInfosRepo,
 	log *zerolog.Logger,
 ) *Service {
 	return &Service{
@@ -33,6 +34,7 @@ func New(
 		teamsRepo:                 teamsRepo,
 		updateTradePeriodCallback: updateTradePeriodCallback,
 		gameRepo:                  gameRepo,
+		additionalInfoRepo:        additionalInfoRepo,
 		log:                       log,
 	}
 }

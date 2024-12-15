@@ -103,6 +103,7 @@ func Run(cfg *config.Config) {
 		teamsRepo,
 		balancesRepo,
 		gamesRepo,
+		additionalInfosRepo,
 		log,
 	)
 
