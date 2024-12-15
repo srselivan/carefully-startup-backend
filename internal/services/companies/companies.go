@@ -83,8 +83,33 @@ func (s *Service) Update(ctx context.Context, params UpdateParams) error {
 		return fmt.Errorf("s.repo.Update: %w", err)
 	}
 
+	shares, err := s.sharesRepo.GetListByCompanyID(ctx, company.ID)
+	if err != nil {
+		return fmt.Errorf("s.sharesRepo.GetListByCompanyID: %w", err)
+	}
+	existedRounds := lo.SliceToMap(
+		shares,
+		func(item models.CompanyShare) (int, struct{}) {
+			return item.Round, struct{}{}
+		},
+	)
+
 	for round, price := range params.Shares {
-		if err = s.sharesRepo.Update(
+		if _, ok := existedRounds[round]; ok {
+			if err = s.sharesRepo.Update(
+				ctx,
+				&models.CompanyShare{
+					CompanyID: company.ID,
+					Round:     round,
+					Price:     price,
+				},
+			); err != nil {
+				return fmt.Errorf("s.sharesRepo.Update: %w", err)
+			}
+			continue
+		}
+
+		if _, err = s.sharesRepo.Create(
 			ctx,
 			&models.CompanyShare{
 				CompanyID: company.ID,
@@ -92,7 +117,7 @@ func (s *Service) Update(ctx context.Context, params UpdateParams) error {
 				Price:     price,
 			},
 		); err != nil {
-			return fmt.Errorf("s.sharesRepo.Update: %w", err)
+			return fmt.Errorf("s.sharesRepo.Create: %w", err)
 		}
 	}
 
