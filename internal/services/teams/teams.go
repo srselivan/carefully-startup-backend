@@ -9,6 +9,7 @@ import (
 	"investment-game-backend/internal/models"
 	"investment-game-backend/internal/repo"
 	"math/rand"
+	"slices"
 )
 
 type Service struct {
@@ -704,6 +705,18 @@ func (s *Service) GetStatisticsByGame(ctx context.Context, round int) (Statistic
 			Score:    score,
 		})
 	}
+
+	slices.SortFunc(statistics.Results, func(a, b TeamResult) int {
+		if a.ID < b.ID {
+			return -1
+		}
+		if a.ID > b.ID {
+			return 1
+		}
+		return 0
+	})
+
+	slices.Reverse(statistics.Results)
 
 	return statistics, nil
 }
