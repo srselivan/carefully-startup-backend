@@ -420,7 +420,7 @@ func (r *Router) getStatistics(resp http.ResponseWriter, req *http.Request) {
 
 	roundParam := req.URL.Query().Get("type")
 	if roundParam == "" {
-		round = 3
+		round = 4
 	} else {
 		roundParsed, err := strconv.Atoi(roundParam)
 		if err != nil {
