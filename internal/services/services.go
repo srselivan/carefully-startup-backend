@@ -48,6 +48,7 @@ type Teams interface {
 	GetAllForCurrentGame(ctx context.Context) ([]models.Team, error)
 	PurchaseAdditionalInfoCompanyInfo(ctx context.Context, teamId int64) (models.AdditionalInfo, int64, error)
 	ResetTransaction(ctx context.Context, teamID int64) (teams.DetailedTeam, error)
+	GetStatisticsByGame(ctx context.Context, round int) (teams.StatisticsByGame, error)
 }
 
 type Auth interface {

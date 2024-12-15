@@ -21,6 +21,7 @@ func (r *Router) initTeamsRoutes(router chi.Router) {
 		subRouter.Post("/purchase/additional-info/{team_id}", r.teamPurchaseAdditionalInfo)
 		subRouter.Get("/{team_id}", r.getTeamByID)
 		subRouter.Get("/", r.getAllTeams)
+		subRouter.Get("/statistics", r.getStatistics)
 	})
 }
 
@@ -402,6 +403,44 @@ func (r *Router) teamPurchaseAdditionalInfo(resp http.ResponseWriter, req *http.
 			BalanceAmount: amount,
 		},
 	)
+	if err != nil {
+		r.log.Error().Err(err).Msg("marshal to json error")
+		resp.WriteHeader(http.StatusInternalServerError)
+		_, _ = resp.Write([]byte(http.StatusText(http.StatusInternalServerError)))
+		return
+	}
+
+	resp.WriteHeader(http.StatusOK)
+	_, _ = resp.Write(response)
+	return
+}
+
+func (r *Router) getStatistics(resp http.ResponseWriter, req *http.Request) {
+	var round int
+
+	roundParam := req.URL.Query().Get("type")
+	if roundParam == "" {
+		round = 3
+	} else {
+		roundParsed, err := strconv.Atoi(roundParam)
+		if err != nil {
+			r.log.Error().Err(err).Msg("get query param")
+			resp.WriteHeader(http.StatusBadRequest)
+			_, _ = resp.Write([]byte(http.StatusText(http.StatusBadRequest)))
+			return
+		}
+		round = roundParsed
+	}
+
+	stats, err := r.teamService.GetStatisticsByGame(req.Context(), round)
+	if err != nil {
+		r.log.Error().Err(err).Msg("GetStatisticsByGame error")
+		resp.WriteHeader(http.StatusInternalServerError)
+		_, _ = resp.Write([]byte(err.Error()))
+		return
+	}
+
+	response, err := jsoniter.Marshal(stats)
 	if err != nil {
 		r.log.Error().Err(err).Msg("marshal to json error")
 		resp.WriteHeader(http.StatusInternalServerError)

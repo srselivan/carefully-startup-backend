@@ -647,3 +647,63 @@ func (s *Service) ResetTransaction(ctx context.Context, teamID int64) (DetailedT
 	}
 	return detailedTeam, nil
 }
+
+type StatisticsByGame struct {
+	Results []TeamResult `json:"results"`
+}
+
+type TeamResult struct {
+	ID       int64  `json:"id"`
+	TeamName string `json:"teamName"`
+	Score    int64  `json:"score"`
+}
+
+func (s *Service) GetStatisticsByGame(ctx context.Context, round int) (StatisticsByGame, error) {
+	game, err := s.gamesRepo.Get(ctx)
+	if err != nil {
+		return StatisticsByGame{}, fmt.Errorf("s.gamesRepo.Get: %w", err)
+	}
+	teams, err := s.teamsRepo.GetAllByGameID(ctx, game.CurrentGame)
+	if err != nil {
+		return StatisticsByGame{}, fmt.Errorf("s.teamsRepo.GetAllByGameID: %w", err)
+	}
+	if len(teams) == 0 {
+		return StatisticsByGame{}, errors.New("no teams for current game")
+	}
+
+	companiesShares, err := s.sharesRepo.GetAllActual(ctx)
+	if err != nil {
+		return StatisticsByGame{}, fmt.Errorf("s.sharesRepo.GetAllActual: %w", err)
+	}
+	companiesSharesOnlyLastRound := lo.Filter(
+		companiesShares,
+		func(item models.CompanyShare, _ int) bool {
+			return item.Round == round
+		},
+	)
+	shareCostByCompanyID := lo.SliceToMap(
+		companiesSharesOnlyLastRound,
+		func(item models.CompanyShare) (int64, int64) {
+			return item.CompanyID, item.Price
+		},
+	)
+
+	statistics := StatisticsByGame{
+		Results: make([]TeamResult, 0, len(teams)),
+	}
+
+	for _, team := range teams {
+		score := int64(0)
+		for companyId, count := range team.Shares {
+			cost := shareCostByCompanyID[companyId]
+			score += cost * count
+		}
+		statistics.Results = append(statistics.Results, TeamResult{
+			ID:       team.ID,
+			TeamName: team.Name,
+			Score:    score,
+		})
+	}
+
+	return statistics, nil
+}
