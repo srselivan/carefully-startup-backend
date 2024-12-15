@@ -694,7 +694,11 @@ func (s *Service) GetStatisticsByGame(ctx context.Context, round int) (Statistic
 	}
 
 	for _, team := range teams {
-		score := int64(0)
+		balance, err := s.balancesRepo.GetByID(ctx, team.BalanceID)
+		if err != nil {
+			return StatisticsByGame{}, fmt.Errorf("s.balancesRepo.GetByID: %w", err)
+		}
+		score := balance.Amount
 		for companyId, count := range team.Shares {
 			cost := shareCostByCompanyID[companyId]
 			score += cost * count
