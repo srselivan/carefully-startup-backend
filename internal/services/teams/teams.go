@@ -543,6 +543,11 @@ func (s *Service) GetAllForCurrentGame(ctx context.Context) ([]models.Team, erro
 var ErrNoAdditionalInfos = errors.New("no additional infos")
 
 func (s *Service) PurchaseAdditionalInfoCompanyInfo(ctx context.Context, teamId int64) (models.AdditionalInfo, int64, error) {
+	if !s.isTradePeriod {
+		s.log.Debug().Msg("cannot do purchase because is not trade period")
+		return models.AdditionalInfo{}, 0, ErrIsNoTradePeriod
+	}
+
 	game, err := s.gamesRepo.Get(ctx)
 	if err != nil {
 		return models.AdditionalInfo{}, 0, fmt.Errorf("s.gamesRepo.Get: %w", err)
