@@ -87,7 +87,7 @@ create table if not exists backend.balance_transaction
     round              integer not null,
     amount             bigint  not null,
     details            jsonb,
-    additional_info_id bigint references backend.additional_info (id),
+    additional_info_id bigint,
     random_event_id    bigint references backend.random_event (id)
 );
 
