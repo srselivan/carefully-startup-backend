@@ -716,10 +716,10 @@ func (s *Service) GetStatisticsByGame(ctx context.Context, round int) (Statistic
 	}
 
 	slices.SortFunc(statistics.Results, func(a, b TeamResult) int {
-		if a.ID < b.ID {
+		if a.Score < b.Score {
 			return -1
 		}
-		if a.ID > b.ID {
+		if a.Score > b.Score {
 			return 1
 		}
 		return 0
